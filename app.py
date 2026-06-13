@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import secrets
 from flask import Flask, render_template, request, redirect, url_for, make_response, session, flash, jsonify
 from dotenv import load_dotenv
 from items import items
@@ -15,6 +16,8 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "premium_ecommerce_secret_ke
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8797666810:AAFNxpfrEAzVrUVTSYc8cGOwChHRc56AesU")
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "-1003719714118,1415187900")
 TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+
+RESET_TOKENS = {}
 
 def send_telegram_message(text):
     chat_ids = [cid.strip() for cid in CHAT_ID.split(",") if cid.strip()]
@@ -694,6 +697,86 @@ def change_password():
     
     flash("Your password has been updated successfully.", "success")
     return redirect(url_for('profile'))
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        if not email:
+            flash("Please enter your email address.", "error")
+            return redirect(url_for('forgot_password'))
+            
+        users = load_users()
+        user_found = None
+        username_found = None
+        for username, u_info in users.items():
+            if u_info.get('email') == email:
+                user_found = u_info
+                username_found = username
+                break
+                
+        if username_found:
+            # Generate a secure reset token
+            token = secrets.token_urlsafe(32)
+            RESET_TOKENS[token] = username_found
+            
+            # Construct reset URL
+            reset_url = request.url_root.rstrip('/') + url_for('reset_password', token=token)
+            
+            # Send notification to Telegram
+            telegram_text = f"<b>🔑 PASSWORD RESET REQUEST</b>\n"
+            telegram_text += f"<b>----------------------------------</b>\n\n"
+            telegram_text += f"👤 <b>Username:</b> {username_found}\n"
+            telegram_text += f"📧 <b>Email:</b> <code>{email}</code>\n\n"
+            telegram_text += f"🔗 <b>Reset Link:</b>\n{reset_url}"
+            send_telegram_message(telegram_text)
+            
+            # Log to console
+            print(f"Password reset link generated for {username_found}: {reset_url}", flush=True)
+            
+            flash("If your email is registered, we have sent a reset link to it.", "success")
+        else:
+            # Show same success message to prevent user enumeration
+            print(f"Password reset requested for unregistered email: {email}", flush=True)
+            flash("If your email is registered, we have sent a reset link to it.", "success")
+            
+        return redirect(url_for('login'))
+        
+    return render_template('share/forgot_password.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    username = RESET_TOKENS.get(token)
+    if not username:
+        flash("The reset link is invalid or has expired.", "error")
+        return redirect(url_for('login'))
+        
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if not new_password or not confirm_password:
+            flash("Please enter and confirm your new password.", "error")
+            return render_template('share/reset_password.html')
+            
+        if new_password != confirm_password:
+            flash("New passwords do not match.", "error")
+            return render_template('share/reset_password.html')
+            
+        users = load_users()
+        if username in users:
+            users[username]['password'] = new_password
+            save_users(users)
+            # Remove used token
+            RESET_TOKENS.pop(token, None)
+            flash("Your password has been reset successfully. Please log in with your new password.", "success")
+            return redirect(url_for('login'))
+        else:
+            flash("User not found.", "error")
+            return redirect(url_for('login'))
+            
+    return render_template('share/reset_password.html')
+
 
 
 def find_order_by_id(order_id):
