@@ -2,6 +2,9 @@ import os
 import json
 import requests
 import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from flask import Flask, render_template, request, redirect, url_for, make_response, session, flash, jsonify
 from dotenv import load_dotenv
 from items import items
@@ -18,6 +21,35 @@ CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "-1003719714118,1415187900")
 TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
 RESET_TOKENS = {}
+
+# --- SMTP EMAIL CONFIGURATION ---
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 465
+SMTP_EMAIL = os.environ.get("SMTP_EMAIL", "panqniceone4@gmail.com")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+
+def send_reset_email(to_email, username, reset_url):
+    if not SMTP_PASSWORD:
+        print("SMTP_PASSWORD is not configured. Skipping email dispatch.", flush=True)
+        return False
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = f"YSTAA SHOPP <{SMTP_EMAIL}>"
+        msg['To'] = to_email
+        msg['Subject'] = "Reset Your Password"
+        
+        body = f"Hello {username},\n\nReset your password:\n\n{reset_url}"
+        msg.attach(MIMEText(body, 'plain'))
+        
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+        print(f"Password reset email sent to {to_email} successfully.", flush=True)
+        return True
+    except Exception as e:
+        print(f"Failed to send reset email to {to_email}: {e}", flush=True)
+        return False
+
 
 def send_telegram_message(text):
     chat_ids = [cid.strip() for cid in CHAT_ID.split(",") if cid.strip()]
@@ -731,14 +763,17 @@ def forgot_password():
             telegram_text += f"🔗 <b>Reset Link:</b>\n{reset_url}"
             send_telegram_message(telegram_text)
             
+            # Send real email
+            send_reset_email(email, username_found, reset_url)
+            
             # Log to console
             print(f"Password reset link generated for {username_found}: {reset_url}", flush=True)
             
-            flash("If your email is registered, we have sent a reset link to it.", "success")
+            flash("If your email is registered, we have sent a reset link to it. Please check your inbox.", "success")
         else:
             # Show same success message to prevent user enumeration
             print(f"Password reset requested for unregistered email: {email}", flush=True)
-            flash("If your email is registered, we have sent a reset link to it.", "success")
+            flash("If your email is registered, we have sent a reset link to it. Please check your inbox.", "success")
             
         return redirect(url_for('login'))
         
