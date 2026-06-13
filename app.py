@@ -90,7 +90,39 @@ else:
     CONTACTS_FILE = 'contacts.json'
     ORDERS_FILE = 'orders.json'
 
+# Vercel KV REST API helpers
+KV_URL = os.environ.get("KV_REST_API_URL")
+KV_TOKEN = os.environ.get("KV_REST_API_TOKEN")
+
+def kv_request(cmd_list):
+    if not KV_URL or not KV_TOKEN:
+        return None
+    try:
+        headers = {
+            "Authorization": f"Bearer {KV_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        response = requests.post(KV_URL, json=cmd_list, headers=headers, timeout=5)
+        if response.status_code == 200:
+            res_json = response.json()
+            return res_json.get("result")
+        else:
+            print(f"KV Request failed (status {response.status_code}): {response.text}")
+            return None
+    except Exception as e:
+        print(f"KV Request error: {e}")
+        return None
+
 def load_users():
+    if KV_URL and KV_TOKEN:
+        val = kv_request(["GET", "ystaa:users"])
+        if val:
+            try:
+                return json.loads(val)
+            except Exception as e:
+                print(f"Error decoding KV users JSON: {e}")
+        print("Vercel KV: ystaa:users not found, falling back to local file template.", flush=True)
+
     if not os.path.exists(USERS_FILE):
         return {}
     try:
@@ -100,14 +132,36 @@ def load_users():
         return {}
 
 def save_users(users):
+    if KV_URL and KV_TOKEN:
+        val_str = json.dumps(users, indent=4)
+        res = kv_request(["SET", "ystaa:users", val_str])
+        if res == "OK":
+            return True
+        print("Vercel KV: Failed to write users, falling back to local file write.", flush=True)
+
     try:
         with open(USERS_FILE, 'w') as f:
             json.dump(users, f, indent=4)
+        return True
     except Exception as e:
         print(f"Error saving users: {e}")
+        return False
 
 def save_contact(contact_data):
     contacts = []
+    if KV_URL and KV_TOKEN:
+        val = kv_request(["GET", "ystaa:contacts"])
+        if val:
+            try:
+                contacts = json.loads(val)
+            except Exception:
+                contacts = []
+        contacts.append(contact_data)
+        res = kv_request(["SET", "ystaa:contacts", json.dumps(contacts, indent=4)])
+        if res == "OK":
+            return
+        print("Vercel KV: Failed to save contact, falling back to local file write.", flush=True)
+
     if os.path.exists(CONTACTS_FILE):
         try:
             with open(CONTACTS_FILE, 'r') as f:
@@ -121,9 +175,24 @@ def save_contact(contact_data):
     except Exception as e:
         print(f"Error saving contact query: {e}")
 
-
 def save_order(username, order_data):
     orders = {}
+    if KV_URL and KV_TOKEN:
+        val = kv_request(["GET", "ystaa:orders"])
+        if val:
+            try:
+                orders = json.loads(val)
+            except Exception:
+                orders = {}
+        key = username if username else "guest"
+        if key not in orders:
+            orders[key] = []
+        orders[key].append(order_data)
+        res = kv_request(["SET", "ystaa:orders", json.dumps(orders, indent=4)])
+        if res == "OK":
+            return
+        print("Vercel KV: Failed to save order, falling back to local file write.", flush=True)
+
     if os.path.exists(ORDERS_FILE):
         try:
             with open(ORDERS_FILE, 'r') as f:
@@ -143,6 +212,16 @@ def save_order(username, order_data):
         print(f"Error saving order: {e}")
 
 def load_orders(username):
+    if KV_URL and KV_TOKEN:
+        val = kv_request(["GET", "ystaa:orders"])
+        if val:
+            try:
+                orders = json.loads(val)
+                return orders.get(username, [])
+            except Exception:
+                pass
+        print("Vercel KV: ystaa:orders not found, falling back to local file.", flush=True)
+
     if not os.path.exists(ORDERS_FILE):
         return []
     try:
