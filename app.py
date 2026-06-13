@@ -26,7 +26,7 @@ RESET_TOKENS = {}
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 SMTP_EMAIL = os.environ.get("SMTP_EMAIL", "ystaashopp@gmail.com")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "vivsqpkvpsweihtd")
 
 def send_reset_email(to_email, username, reset_url):
     if not SMTP_PASSWORD:
