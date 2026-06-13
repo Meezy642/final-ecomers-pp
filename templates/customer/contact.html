@@ -1,0 +1,594 @@
+{% extends "customer/layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+    
+    <!-- Premium Luxury Header Section -->
+    <div class="text-center max-w-3xl mx-auto space-y-4 mb-6">
+        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm">
+            <i class="fas fa-crown"></i> YSTAA Concierge Services
+        </span>
+        <h1 class="text-4xl sm:text-5xl font-black text-white font-heading tracking-tight leading-none">
+            YSTAA <span class="text-purple-400 bg-gradient-to-r from-purple-400 to-indigo-500 bg-clip-text text-transparent">Support & Concierge</span>
+        </h1>
+        <p class="text-slate-400 text-base sm:text-lg leading-relaxed">
+            Manage your orders, book a private styling session at our Sen Sok showroom, or contact our support team.
+        </p>
+    </div>
+
+    <!-- Main Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left Column: Tabs Console (7 cols) -->
+        <div class="lg:col-span-7 bg-zinc-900/40 p-6 sm:p-8 rounded-3xl border border-zinc-850 shadow-2xl relative overflow-hidden space-y-6">
+            <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
+            
+            <!-- Tab Navigation Header -->
+            <div class="flex border-b border-zinc-800 gap-2 overflow-x-auto pb-px">
+                <button onclick="switchTab('direct-desk')" id="tab-btn-direct-desk" class="px-4 py-3 text-sm font-bold border-b-2 border-purple-500 text-purple-400 focus:outline-none transition-all duration-300 whitespace-nowrap flex items-center gap-2 cursor-pointer">
+                    <i class="fas fa-paper-plane text-xs"></i> Concierge Desk
+                </button>
+                <button onclick="switchTab('order-tracker')" id="tab-btn-order-tracker" class="px-4 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white focus:outline-none transition-all duration-300 whitespace-nowrap flex items-center gap-2 cursor-pointer">
+                    <i class="fas fa-route text-xs"></i> Order Tracker
+                </button>
+                <button onclick="switchTab('showroom-booking')" id="tab-btn-showroom-booking" class="px-4 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white focus:outline-none transition-all duration-300 whitespace-nowrap flex items-center gap-2 cursor-pointer">
+                    <i class="fas fa-calendar-alt text-xs"></i> VIP Showroom Booking
+                </button>
+            </div>
+            
+            <!-- Tab 1 Content: Direct Message Desk -->
+            <div id="tab-content-direct-desk" class="tab-content space-y-5">
+                <div>
+                    <h3 class="text-xl font-extrabold text-white font-heading">Send a Direct Message</h3>
+                    <p class="text-slate-400 text-xs mt-1">Our support managers will receive this inquiry instantly.</p>
+                </div>
+                
+                <form action="{{ url_for('contact') }}" method="POST" class="auth-form space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="form-group-field">
+                            <label for="name" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Full Name</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" id="name" name="name" placeholder="Sok Chan" required>
+                            </div>
+                        </div>
+                        <div class="form-group-field">
+                            <label for="email" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="email" name="email" placeholder="chan@example.com" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group-field">
+                        <label for="subject" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Subject</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-heading input-icon"></i>
+                            <input type="text" id="subject" name="subject" placeholder="Order query, size consultation, store details..." required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group-field">
+                        <label for="message" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Your Message</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-comment-alt input-icon"></i>
+                            <textarea id="message" name="message" placeholder="Describe your request in detail..." required class="h-28"></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-auth-action w-full py-4 text-white font-bold cursor-pointer group flex items-center justify-center gap-2">
+                        Send Message <i class="fas fa-paper-plane text-xs transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Tab 2 Content: Live Order Tracker -->
+            <div id="tab-content-order-tracker" class="tab-content hidden space-y-6">
+                <div class="space-y-1">
+                    <h3 class="text-xl font-extrabold text-white font-heading">Live Order Tracker</h3>
+                    <p class="text-slate-400 text-xs">Enter your order ID (e.g. YS-100245) to trace packaging, shipping status, and items.</p>
+                </div>
+                
+                <div class="flex gap-3">
+                    <div class="input-icon-wrapper flex-grow">
+                        <i class="fas fa-receipt input-icon"></i>
+                        <input type="text" id="tracking-input" placeholder="Enter Order ID (e.g. YS-123456)">
+                    </div>
+                    <button onclick="trackOrder()" class="px-6 bg-gradient-to-r from-purple-500 to-indigo-650 hover:from-purple-600 hover:to-indigo-750 text-white font-bold rounded-xl transition-all duration-300 shadow-md flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]">
+                        Track <i class="fas fa-search text-xs"></i>
+                    </button>
+                </div>
+                
+                <!-- Tracking Loader -->
+                <div id="tracking-loader" class="hidden py-8 text-center space-y-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+                    <p class="text-xs text-slate-450">Consulting orders database, please wait...</p>
+                </div>
+                
+                <!-- Tracking Error Alert -->
+                <div id="tracking-error" class="hidden bg-rose-950/20 border border-rose-800/60 p-4 rounded-xl text-rose-450 text-xs font-bold text-center"></div>
+                
+                <!-- Tracking Result -->
+                <div id="tracking-result" class="hidden space-y-6">
+                    
+                    <!-- Progress Timeline Card -->
+                    <div class="bg-zinc-950/40 p-5 rounded-2xl border border-zinc-800/80 space-y-8">
+                        <div class="flex justify-between items-center border-b border-zinc-800/40 pb-2.5">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Estimated Transit Status</span>
+                            <span id="tracker-badge-status" class="text-xs font-black text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20"></span>
+                        </div>
+                        
+                        <!-- Visual Timeline -->
+                        <div class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-2 px-1">
+                            <!-- Connecting Line -->
+                            <div class="absolute top-[20px] left-[20px] md:left-6 md:right-6 h-[calc(100%-40px)] md:h-1 w-1 md:w-[calc(100%-48px)] bg-zinc-850 z-0"></div>
+                            <div id="tracker-progress-line" class="absolute top-[20px] left-[20px] md:left-6 h-0 md:h-1 w-1 md:w-0 bg-gradient-to-r from-purple-500 to-indigo-500 z-0 transition-all duration-750"></div>
+                            
+                            <!-- Steps -->
+                            <div class="tracker-node relative z-10 flex md:flex-col items-center gap-4 md:gap-2 text-left md:text-center flex-1" id="node-1">
+                                <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-850 text-slate-500 flex items-center justify-center text-base transition-all duration-300">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-xs font-bold text-slate-400">Order Placed</h5>
+                                    <p class="text-[9px] text-slate-500">Invoice Logged</p>
+                                </div>
+                            </div>
+                            
+                            <div class="tracker-node relative z-10 flex md:flex-col items-center gap-4 md:gap-2 text-left md:text-center flex-1" id="node-2">
+                                <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-850 text-slate-500 flex items-center justify-center text-base transition-all duration-300">
+                                    <i class="fas fa-box-open"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-xs font-bold text-slate-400">Packaging</h5>
+                                    <p class="text-[9px] text-slate-500">VIP Showroom</p>
+                                </div>
+                            </div>
+                            
+                            <div class="tracker-node relative z-10 flex md:flex-col items-center gap-4 md:gap-2 text-left md:text-center flex-1" id="node-3">
+                                <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-850 text-slate-500 flex items-center justify-center text-base transition-all duration-300">
+                                    <i class="fas fa-shipping-fast"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-xs font-bold text-slate-400">In Transit</h5>
+                                    <p class="text-[9px] text-slate-500">Out for Delivery</p>
+                                </div>
+                            </div>
+                            
+                            <div class="tracker-node relative z-10 flex md:flex-col items-center gap-4 md:gap-2 text-left md:text-center flex-1" id="node-4">
+                                <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-850 text-slate-500 flex items-center justify-center text-base transition-all duration-300">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-xs font-bold text-slate-400">Delivered</h5>
+                                    <p class="text-[9px] text-slate-500">Arrived Safely</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Metadata Overview -->
+                    <div class="bg-zinc-950/40 p-5 rounded-2xl border border-zinc-800/80 space-y-4">
+                        <h4 class="text-xs font-extrabold text-purple-400 uppercase tracking-widest border-b border-zinc-800/40 pb-2 font-heading">Fulfillment Details</h4>
+                        
+                        <div class="grid grid-cols-2 gap-4 text-xs font-medium">
+                            <div>
+                                <span class="text-slate-500 block">Recipient Name</span>
+                                <span id="tracker-name" class="text-white font-bold"></span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block">Placement Date</span>
+                                <span id="tracker-date" class="text-slate-300"></span>
+                            </div>
+                            <div class="col-span-2 border-t border-zinc-800/30 pt-2.5">
+                                <span class="text-slate-500 block">Delivery Address</span>
+                                <p id="tracker-address" class="text-slate-350 font-normal leading-relaxed mt-0.5"></p>
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-xs font-extrabold text-purple-400 uppercase tracking-widest border-b border-zinc-800/40 pb-2 pt-4 font-heading">Purchased Items</h4>
+                        <div id="tracker-items-list" class="divide-y divide-zinc-800/30 space-y-2.5">
+                            <!-- Populated via JS -->
+                        </div>
+                        
+                        <div class="flex justify-between items-center text-xs font-bold text-white border-t border-zinc-800/40 pt-3 mt-4">
+                            <span>Total Paid (via KHQR)</span>
+                            <span id="tracker-total" class="text-purple-400 font-black text-sm font-heading"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 3 Content: VIP Showroom Booking -->
+            <div id="tab-content-showroom-booking" class="tab-content hidden space-y-5">
+                <div class="space-y-1">
+                    <h3 class="text-xl font-extrabold text-white font-heading">Private Showroom Appointment</h3>
+                    <p class="text-slate-400 text-xs">Book an exclusive personal styling session or custom sizing consultation at our flagship gallery.</p>
+                </div>
+                
+                <form id="booking-form" onsubmit="submitBooking(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="form-group-field">
+                            <label for="booking-service" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Styling Service</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-gem input-icon"></i>
+                                <select id="booking-service" required class="w-full bg-transparent border-0 outline-none text-slate-200 py-1 cursor-pointer">
+                                    <option value="Personal Fashion Styling" class="bg-zinc-950 text-slate-200">Personal Fashion Styling</option>
+                                    <option value="Jewelry Consultation" class="bg-zinc-950 text-slate-200">Jewelry Consultation</option>
+                                    <option value="Private Showroom Tour" class="bg-zinc-950 text-slate-200">Private Showroom Tour</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group-field">
+                            <label for="booking-advisor" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Consultant Advisor</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-user-tie input-icon"></i>
+                                <select id="booking-advisor" required class="w-full bg-transparent border-0 outline-none text-slate-200 py-1 cursor-pointer">
+                                    <option value="Lead Stylist (Aura)" class="bg-zinc-950 text-slate-200">Lead Stylist (Aura)</option>
+                                    <option value="Jewelry Advisor (Sokha)" class="bg-zinc-950 text-slate-200">Jewelry Advisor (Sokha)</option>
+                                    <option value="Watch Specialist (Narith)" class="bg-zinc-950 text-slate-200">Watch Specialist (Narith)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="form-group-field">
+                            <label for="booking-date" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select Date</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-calendar-day input-icon"></i>
+                                <input type="date" id="booking-date" required>
+                            </div>
+                        </div>
+                        <div class="form-group-field">
+                            <label for="booking-time" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select Time Slot</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-clock input-icon"></i>
+                                <select id="booking-time" required class="w-full bg-transparent border-0 outline-none text-slate-200 py-1 cursor-pointer">
+                                    <option value="9:00 AM - 11:00 AM" class="bg-zinc-950 text-slate-200">9:00 AM - 11:00 AM</option>
+                                    <option value="11:00 AM - 1:00 PM" class="bg-zinc-950 text-slate-200">11:00 AM - 1:00 PM</option>
+                                    <option value="2:00 PM - 4:00 PM" class="bg-zinc-950 text-slate-200">2:00 PM - 4:00 PM</option>
+                                    <option value="4:00 PM - 6:00 PM" class="bg-zinc-950 text-slate-200">4:00 PM - 6:00 PM</option>
+                                    <option value="6:00 PM - 8:00 PM" class="bg-zinc-950 text-slate-200">6:00 PM - 8:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="form-group-field">
+                            <label for="booking-name" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Your Name</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" id="booking-name" placeholder="Sok Chan" required>
+                            </div>
+                        </div>
+                        <div class="form-group-field">
+                            <label for="booking-phone" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phone Contact</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-phone input-icon"></i>
+                                <input type="tel" id="booking-phone" placeholder="012 345 678" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group-field">
+                        <label for="booking-notes" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Special Styling Requests</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-pencil-alt input-icon"></i>
+                            <textarea id="booking-notes" placeholder="Mention size specifications, material preferences, or collections of interest..." class="h-24"></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-auth-action w-full py-4 text-white font-bold cursor-pointer group flex items-center justify-center gap-2">
+                        Request Styling Booking <i class="fas fa-calendar-check text-xs transform group-hover:scale-110 transition-transform"></i>
+                    </button>
+                </form>
+                
+                <!-- Booking Success Display -->
+                <div id="booking-success" class="hidden bg-emerald-950/20 border border-emerald-800/60 p-6 rounded-2xl text-center space-y-4 shadow-xl">
+                    <div class="w-14 h-14 bg-emerald-900/40 border border-emerald-500/25 text-emerald-400 text-2xl rounded-xl flex items-center justify-center mx-auto shadow-md">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h4 class="text-white font-bold text-base font-heading">Styling Reservation Requested!</h4>
+                        <p class="text-slate-450 text-xs leading-relaxed max-w-sm mx-auto">We have logged your VIP appointment request. Our showroom coordinator will contact you shortly to confirm your consultation schedule.</p>
+                    </div>
+                    <div class="border-t border-zinc-805/60 pt-4 max-w-xs mx-auto text-xs space-y-2 text-left text-slate-300 font-medium">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Styling Category:</span>
+                            <span id="res-service" class="font-bold text-white"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Consultant:</span>
+                            <span id="res-advisor" class="font-bold text-white"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Reserved Time:</span>
+                            <span id="res-time" class="font-bold text-purple-400"></span>
+                        </div>
+                    </div>
+                    <button onclick="resetBookingForm()" class="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white font-bold text-xs rounded-xl cursor-pointer transition-colors shadow-sm mt-4">
+                        Schedule Another Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Showroom Info & Map (5 cols) -->
+        <div class="lg:col-span-5 bg-zinc-900/40 p-6 sm:p-8 rounded-3xl border border-zinc-850 shadow-2xl space-y-6">
+            
+            <div class="space-y-4">
+                <div class="relative h-44 rounded-2xl overflow-hidden border border-zinc-800 shadow-md">
+                    <!-- Sized slide storefront background display -->
+                    <img src="{{ url_for('static', filename='img/slide1.jpg') }}" alt="YSTAA Showroom Storefront" class="w-full h-full object-cover brightness-[0.6]">
+                    <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent"></div>
+                    <div class="absolute bottom-4 left-4">
+                        <span class="text-[9px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 uppercase tracking-widest">Flagship Showroom</span>
+                        <h4 class="text-base font-black text-white font-heading mt-0.5">Sen Sok Flagship, Phnom Penh</h4>
+                    </div>
+                </div>
+                
+                <!-- Details row -->
+                <div class="space-y-3.5 border-b border-zinc-800/60 pb-5 text-sm font-medium">
+                    <div class="flex items-center gap-3 text-slate-350">
+                        <i class="fas fa-map-marker-alt text-purple-400 w-4"></i>
+                        <span>Khan Sen Sok, Phnom Penh, Cambodia</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-350">
+                        <i class="fas fa-clock text-purple-400 w-4"></i>
+                        <span>Monday - Sunday: 9:00 AM - 8:00 PM</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-350">
+                        <i class="fas fa-phone-alt text-purple-400 w-4"></i>
+                        <a href="tel:+85512345678" class="hover:text-purple-400 transition-colors">+855 12 345 678</a>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-350">
+                        <i class="fas fa-envelope text-purple-400 w-4"></i>
+                        <a href="mailto:support@ystaashopp.com" class="hover:text-purple-400 transition-colors">support@ystaashopp.com</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Amenities -->
+            <div class="space-y-3 border-b border-zinc-800/60 pb-5">
+                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest font-heading">Exclusive Showroom Amenities</h4>
+                <div class="grid grid-cols-2 gap-3 text-xs font-semibold text-slate-300">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-glass-champagne text-purple-400 text-[10px]"></i>
+                        <span>Complimentary Champagne</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-couch text-purple-400 text-[10px]"></i>
+                        <span>VIP Fitting Lounges</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-ruler-combined text-purple-400 text-[10px]"></i>
+                        <span>Bespoke Alterations</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-user-sparkles text-purple-400 text-[10px]"></i>
+                        <span>1-on-1 Styling Advisors</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Map box -->
+            <div class="space-y-3">
+                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest font-heading">Showroom Location Map</h4>
+                <div class="relative rounded-2xl overflow-hidden border border-zinc-800/80 shadow-lg h-52">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15634.34149811467!2d104.85698031267597!3d11.582260655611082!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310951a221f7ec81%3A0xe54e6fae1f7c18b7!2sKhan%20Sen%20Sok%2C%20Phnom%20Penh!5e0!3m2!1sen!2skh!4v1718250000000!5m2!1sen!2skh" 
+                        class="absolute inset-0 w-full h-full border-0 filter invert hue-rotate-180 brightness-[0.7] contrast-[1.2] transition-all duration-300"
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+            
+        </div>
+        
+    </div>
+
+</div>
+
+<!-- Client side Tabs switcher & AJAX order tracking script -->
+<script>
+    // Tab switching controller
+    function switchTab(tabId) {
+        // Hide all tabs
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Show active tab
+        const activeContent = document.getElementById(`tab-content-${tabId}`);
+        if (activeContent) {
+            activeContent.classList.remove('hidden');
+        }
+        
+        // Reset navigation buttons border and text styles
+        const buttons = document.querySelectorAll('[id^="tab-btn-"]');
+        buttons.forEach(btn => {
+            btn.className = "px-4 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white focus:outline-none transition-all duration-300 whitespace-nowrap flex items-center gap-2 cursor-pointer";
+        });
+        
+        // Apply active classes to selected button
+        const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+        if (activeBtn) {
+            activeBtn.className = "px-4 py-3 text-sm font-bold border-b-2 border-purple-500 text-purple-400 focus:outline-none transition-all duration-300 whitespace-nowrap flex items-center gap-2 cursor-pointer";
+        }
+    }
+
+    // Live AJAX order tracking logic
+    function trackOrder() {
+        const orderInput = document.getElementById('tracking-input');
+        const trackingId = orderInput.value.trim();
+        
+        const loader = document.getElementById('tracking-loader');
+        const errorAlert = document.getElementById('tracking-error');
+        const resultPanel = document.getElementById('tracking-result');
+        
+        if (!trackingId) {
+            errorAlert.textContent = "Please enter an Order ID first.";
+            errorAlert.classList.remove('hidden');
+            resultPanel.classList.add('hidden');
+            return;
+        }
+        
+        // Show loading spinner
+        loader.classList.remove('hidden');
+        errorAlert.classList.add('hidden');
+        resultPanel.classList.add('hidden');
+        
+        // Request order parameters from Flask API
+        fetch(`/api/track_order/${encodeURIComponent(trackingId)}`)
+            .then(res => res.json())
+            .then(data => {
+                loader.classList.add('hidden');
+                
+                if (data.success) {
+                    // Fill metadata summary
+                    document.getElementById('tracker-badge-status').textContent = data.status_text;
+                    document.getElementById('tracker-name').textContent = data.buyer_name;
+                    document.getElementById('tracker-date').textContent = data.timestamp;
+                    document.getElementById('tracker-address').textContent = data.buyer_address;
+                    document.getElementById('tracker-total').textContent = `$${parseFloat(data.total_price).toFixed(2)} USD`;
+                    
+                    // Render purchased items list
+                    let itemsHtml = "";
+                    data.items.forEach(item => {
+                        itemsHtml += `
+                            <div class="flex items-center gap-3 py-2.5">
+                                <div class="w-10 h-10 bg-white border border-zinc-800 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                                    <img src="${item.image}" alt="${item.title}" class="max-w-full max-h-full object-contain mix-blend-multiply">
+                                </div>
+                                <div class="flex-grow min-w-0">
+                                    <h5 class="text-white font-bold text-xs truncate" title="${item.title}">${item.title}</h5>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Qty: ${item.quantity} × $${parseFloat(item.price).toFixed(2)}</p>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <span class="text-xs font-bold text-slate-300 font-heading">$${(parseFloat(item.price) * parseInt(item.quantity)).toFixed(2)}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('tracker-items-list').innerHTML = itemsHtml;
+                    
+                    // Update Timeline visual progress
+                    updateVisualTimeline(data.status_code);
+                    
+                    // Display result container
+                    resultPanel.classList.remove('hidden');
+                } else {
+                    errorAlert.textContent = data.message;
+                    errorAlert.classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                loader.classList.add('hidden');
+                errorAlert.textContent = "A system error occurred. Please verify your connection and try again.";
+                errorAlert.classList.remove('hidden');
+                console.error("Tracking API Error:", err);
+            });
+    }
+
+    // Timeline nodes updates
+    function updateVisualTimeline(statusCode) {
+        const node1 = document.getElementById('node-1');
+        const node2 = document.getElementById('node-2');
+        const node3 = document.getElementById('node-3');
+        const node4 = document.getElementById('node-4');
+        const nodes = [node1, node2, node3, node4];
+        
+        const line = document.getElementById('tracker-progress-line');
+        let widthVal = "0%";
+        if (statusCode === 1) widthVal = "12%";
+        else if (statusCode === 2) widthVal = "38%";
+        else if (statusCode === 3) widthVal = "68%";
+        else if (statusCode === 4) widthVal = "100%";
+        
+        // Handle responsive rotation settings for progress line
+        if (window.innerWidth < 768) {
+            line.style.width = "4px";
+            line.style.height = widthVal;
+        } else {
+            line.style.height = "4px";
+            line.style.width = widthVal;
+        }
+        
+        nodes.forEach((node, idx) => {
+            const stepNum = idx + 1;
+            const badgeIcon = node.querySelector('.w-10');
+            const stepTitle = node.querySelector('h5');
+            
+            if (stepNum <= statusCode) {
+                // Active node state
+                badgeIcon.className = "w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-base shadow-lg shadow-purple-900/35 scale-105 border border-purple-500/40 transition-all duration-300";
+                stepTitle.className = "text-xs font-black text-purple-400";
+            } else {
+                // Inactive node state
+                badgeIcon.className = "w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-850/80 text-slate-500 flex items-center justify-center text-base transition-all duration-300";
+                stepTitle.className = "text-xs font-bold text-slate-400";
+            }
+        });
+    }
+
+    // Showroom Booking handlers
+    function submitBooking(e) {
+        e.preventDefault();
+        
+        const service = document.getElementById('booking-service').value;
+        const advisor = document.getElementById('booking-advisor').value;
+        const dateVal = document.getElementById('booking-date').value;
+        const timeSlot = document.getElementById('booking-time').value;
+        
+        // Format booking date beautifully
+        const dateObj = new Date(dateVal);
+        const options = { day: 'numeric', month: 'short', year: 'numeric' };
+        const formattedDate = dateObj.toLocaleDateString('en-US', options);
+        
+        // Update summary texts
+        document.getElementById('res-service').textContent = service;
+        document.getElementById('res-advisor').textContent = advisor;
+        document.getElementById('res-time').textContent = `${formattedDate} @ ${timeSlot}`;
+        
+        // Hide form and expose booking success card
+        document.getElementById('booking-form').classList.add('hidden');
+        document.getElementById('booking-success').classList.remove('hidden');
+        
+        showToast("Styling booking requested successfully!", "success");
+    }
+
+    function resetBookingForm() {
+        document.getElementById('booking-form').reset();
+        document.getElementById('booking-form').classList.remove('hidden');
+        document.getElementById('booking-success').classList.add('hidden');
+    }
+
+    // Bind window resize event to automatically format timeline orientations
+    window.addEventListener('resize', () => {
+        const activeNode = document.querySelector('.bg-gradient-to-br');
+        if (activeNode) {
+            // Re-trigger visual updates to align line direction settings
+            const errorAlert = document.getElementById('tracking-error');
+            const resultPanel = document.getElementById('tracking-result');
+            if (resultPanel && !resultPanel.classList.contains('hidden')) {
+                trackOrder();
+            }
+        }
+    });
+    
+    // Set default select date to tomorrow
+    document.addEventListener('DOMContentLoaded', () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        document.getElementById('booking-date').value = tomorrowStr;
+        document.getElementById('booking-date').min = tomorrowStr;
+    });
+</script>
+{% endblock %}

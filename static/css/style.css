@@ -1,0 +1,1169 @@
+/* static/css/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --font-heading: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
+    --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
+
+    /* Theme colors - Cyber-Noir Dark Mode */
+    --bg-darkest: #09090b;
+    --bg-dark: #121216;
+    --bg-panel: #18181c;
+    --border-dark: #27272a;
+    
+    --primary: #8b5cf6; /* Neon Purple */
+    --primary-hover: #7c3aed;
+    --primary-glow: rgba(139, 92, 246, 0.15);
+    
+    --accent: #06b6d4; /* Neon Cyan */
+    --accent-hover: #0891b2;
+    --accent-glow: rgba(6, 182, 212, 0.15);
+    
+    --success: #10b981;
+    --danger: #f43f5e;
+    --warning: #f59e0b;
+    
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    
+    --glass-bg: rgba(18, 18, 24, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.05);
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
+    --neon-glow-primary: 0 0 15px rgba(139, 92, 246, 0.25);
+    --neon-glow-accent: 0 0 15px rgba(6, 182, 212, 0.25);
+    
+    --radius-md: 12px;
+    --radius-lg: 20px;
+}
+
+/* --- General Resets & Styling Overrides --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--bg-darkest);
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.05), transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.05), transparent 40%);
+    background-attachment: fixed;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: white;
+    font-weight: 700;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 8px;
+    letter-spacing: -0.025em;
+    background: linear-gradient(135deg, white 30%, var(--text-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Custom Cyber-Noir Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-darkest);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-dark);
+    border-radius: 10px;
+    border: 1px solid var(--bg-darkest);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* --- Dynamic Buttons & Badges --- */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    color: white;
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5), var(--neon-glow-primary);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* --- Auth Card Redesign (Login/Register) --- */
+.auth-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 150px);
+    padding: 40px 20px;
+}
+
+.auth-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 40px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: var(--shadow-xl), 0 0 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+}
+
+.auth-header h2 {
+    font-size: 1.85rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, white 60%, var(--text-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.auth-header p {
+    color: var(--text-secondary);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group-field label {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.label-row-split {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.forgot-password-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.forgot-password-link:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+.auth-card .input-icon-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: rgba(9, 9, 11, 0.6);
+    border: 1.5px solid var(--border-dark);
+    border-radius: 12px;
+    padding: 0 16px;
+    gap: 12px;
+    transition: all 0.2s ease-in-out;
+}
+
+.auth-card .input-icon-wrapper .input-icon {
+    color: var(--text-secondary);
+    transition: all 0.2s ease-in-out;
+    flex-shrink: 0;
+    font-size: 1.05rem;
+}
+
+.auth-card .input-icon-wrapper input,
+.auth-card .input-icon-wrapper textarea {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: white !important;
+    width: 100%;
+    padding: 14px 0;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+}
+
+.auth-card .input-icon-wrapper textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* When the wrapper has focus inside */
+.auth-card .input-icon-wrapper:focus-within {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), var(--neon-glow-primary) !important;
+    background-color: rgba(9, 9, 11, 0.85);
+}
+
+.auth-card .input-icon-wrapper:focus-within .input-icon {
+    color: var(--primary);
+    text-shadow: var(--neon-glow-primary);
+}
+
+/* Custom Autofill Styles to prevent yellow/blue background flashing */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.form-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-checkbox-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border-dark);
+    background-color: rgba(9, 9, 11, 0.6);
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+.form-checkbox-row label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.form-checkbox-row label a {
+    color: var(--accent);
+}
+
+.btn-auth-action {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    font-weight: 700;
+    padding: 14px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25);
+    text-align: center;
+}
+
+.btn-auth-action:hover {
+    background: linear-gradient(135deg, var(--primary-hover) 0%, #6d28d9 100%);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45), var(--neon-glow-primary);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 10px 0;
+}
+
+.auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-dark);
+}
+
+.auth-divider::before {
+    margin-right: 15px;
+}
+
+.auth-divider::after {
+    margin-left: 15px;
+}
+
+.social-auth-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+.social-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(9, 9, 11, 0.4);
+    border: 1.5px solid var(--border-dark);
+    color: var(--text-primary);
+}
+
+.social-btn:hover {
+    background-color: var(--bg-panel);
+    border-color: var(--text-muted);
+    color: white;
+}
+
+/* --- Wishlist Overhaul --- */
+.wishlist-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--border-dark);
+}
+
+.wishlist-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg), var(--neon-glow-primary);
+}
+
+.wishlist-img-wrapper {
+    background: rgba(9, 9, 11, 0.3);
+}
+
+.remove-wishlist-btn {
+    background: var(--bg-dark);
+    color: var(--text-muted);
+    border-color: var(--border-dark);
+}
+
+.remove-wishlist-btn:hover {
+    color: var(--danger);
+    background-color: var(--bg-panel);
+}
+
+.wishlist-details h4 {
+    color: white;
+}
+
+.wishlist-price {
+    color: white;
+}
+
+.wishlist-cart-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    box-shadow: 0 4px 10px rgba(139, 92, 246, 0.2);
+}
+
+.wishlist-cart-btn:hover {
+    background: linear-gradient(135deg, var(--primary-hover) 0%, #6d28d9 100%);
+    box-shadow: 0 6px 14px rgba(139, 92, 246, 0.4), var(--neon-glow-primary);
+}
+
+.empty-state {
+    background: var(--glass-bg);
+    border-color: var(--border-dark);
+}
+
+.empty-state i {
+    color: var(--border-dark);
+}
+
+/* --- Cart & Quantity UI --- */
+.cart-items-panel {
+    background: var(--glass-bg);
+    border: 1px solid var(--border-dark);
+    box-shadow: var(--shadow-md);
+}
+
+.cart-table th {
+    background-color: rgba(9, 9, 11, 0.4);
+    color: var(--text-secondary);
+    border-bottom: 1.5px solid var(--border-dark);
+}
+
+.cart-table td {
+    border-bottom: 1px solid var(--border-dark);
+}
+
+.cart-product-cell img {
+    background: rgba(9, 9, 11, 0.4);
+    border-color: var(--border-dark);
+}
+
+.cart-product-cell span {
+    color: white;
+}
+
+.cart-qty-wrapper {
+    background: rgba(9, 9, 11, 0.5);
+    border-color: var(--border-dark);
+}
+
+.qty-btn {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-dark);
+}
+
+.qty-btn:hover {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary-hover);
+}
+
+.cart-qty-input {
+    color: white;
+}
+
+.cart-total-cell {
+    color: white;
+}
+
+.cart-remove-btn {
+    color: var(--text-muted);
+}
+
+.cart-remove-btn:hover {
+    color: var(--danger);
+}
+
+/* Cart Summary Sidebar */
+.cart-summary-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--border-dark);
+}
+
+.cart-summary-card h3 {
+    border-bottom-color: var(--border-dark);
+    color: white;
+}
+
+.summary-row.total {
+    color: white;
+    border-top-color: var(--border-dark);
+}
+
+.checkout-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+}
+
+.checkout-btn:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 6px 18px rgba(139, 92, 246, 0.5), var(--neon-glow-primary);
+}
+
+/* --- Receipt / Confirmation Layout --- */
+.receipt-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--border-dark);
+    box-shadow: var(--shadow-xl);
+}
+
+.receipt-details-box {
+    background: rgba(9, 9, 11, 0.5);
+    border-color: var(--border-dark);
+}
+
+.receipt-section-title {
+    color: var(--text-secondary);
+    border-bottom-color: var(--border-dark);
+}
+
+.receipt-info-item span {
+    color: white;
+}
+
+.receipt-product-name {
+    color: var(--text-primary);
+}
+
+.receipt-product-qty-price {
+    color: white;
+}
+
+.receipt-total-row {
+    color: white;
+    border-top-color: var(--border-dark);
+}
+
+/* --- User Initials Avatar Icon --- */
+.user-avatar-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.875rem;
+    color: white;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+    border: 1.5px solid var(--border-dark);
+}
+
+/* --- Dynamic Toast Alerts --- */
+#toast-container {
+    position: fixed;
+    top: 80px; /* Below the sticky navbar */
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+    max-width: 400px;
+    width: calc(100% - 48px);
+}
+
+.toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    background: rgba(18, 18, 24, 0.95);
+    border: 1px solid var(--border-dark);
+    border-left: 4px solid var(--primary);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: all 0.3s ease;
+}
+
+.toast.toast-success {
+    border-left-color: var(--success);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1), 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.toast.toast-error {
+    border-left-color: var(--danger);
+    box-shadow: 0 4px 15px rgba(244, 63, 94, 0.1), 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.toast.toast-info {
+    border-left-color: var(--primary);
+}
+
+.toast i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.toast.toast-success i {
+    color: var(--success);
+}
+
+.toast.toast-error i {
+    color: var(--danger);
+}
+
+.toast.toast-info i {
+    color: var(--primary);
+}
+
+.toast-message {
+    color: var(--text-primary);
+    flex-grow: 1;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.2s;
+    margin-left: 8px;
+}
+
+.toast-close:hover {
+    color: white;
+}
+
+.toast.toast-fade-out {
+    animation: toastFadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes toastFadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.95);
+    }
+}
+
+/* --- Contact & About visual overrides --- */
+.contact-form-card {
+    background: var(--glass-bg);
+    border-color: var(--border-dark);
+}
+
+.contact-info-card {
+    background: var(--glass-bg);
+    border-color: var(--border-dark);
+}
+
+.contact-info-icon {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--primary);
+    text-shadow: var(--neon-glow-primary);
+}
+
+.contact-info-text p {
+    color: var(--text-secondary);
+}
+
+/* About Screen overrides */
+.about-hero-section {
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darkest) 100%);
+    border: 1px solid var(--border-dark);
+}
+
+.about-hero-section p {
+    color: var(--text-secondary);
+}
+
+.about-content-text p {
+    color: var(--text-secondary);
+}
+
+.about-img-frame {
+    border-color: var(--border-dark);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-card {
+    background: var(--glass-bg);
+    border-color: var(--border-dark);
+}
+
+.stat-card-number {
+    color: var(--accent);
+    text-shadow: var(--neon-glow-accent);
+}
+
+.stat-card-label {
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   LIGHT MODE STYLING OVERRIDES
+   ========================================================================== */
+html.light-mode {
+    --bg-darkest: #f8fafc; /* Slate 50 */
+    --bg-dark: #ffffff;    /* White */
+    --bg-panel: #f1f5f9;   /* Slate 100 */
+    --border-dark: #cbd5e1; /* Slate 300 */
+    
+    --primary: #7c3aed;    /* Vibrant Violet */
+    --primary-hover: #6d28d9;
+    --primary-glow: rgba(124, 58, 237, 0.08);
+    
+    --accent: #0891b2;    /* Vibrant Cyan */
+    --accent-hover: #0e7490;
+    --accent-glow: rgba(8, 145, 178, 0.08);
+    
+    --text-primary: #0f172a; /* Slate 900 */
+    --text-secondary: #475569; /* Slate 600 */
+    --text-muted: #94a3b8;   /* Slate 400 */
+    
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(15, 23, 42, 0.06);
+    
+    --neon-glow-primary: 0 0 15px rgba(124, 58, 237, 0.15);
+    --neon-glow-accent: 0 0 15px rgba(8, 145, 178, 0.15);
+}
+
+/* Page body gradient overrides */
+html.light-mode body {
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.04), transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(8, 145, 178, 0.04), transparent 50%);
+    color: var(--text-primary);
+}
+
+/* Headings colors */
+html.light-mode h1:not(#hero-slider *),
+html.light-mode h2:not(#hero-slider *),
+html.light-mode h3:not(#hero-slider *),
+html.light-mode h4:not(#hero-slider *),
+html.light-mode h5:not(#hero-slider *),
+html.light-mode h6:not(#hero-slider *) {
+    color: #0f172a !important;
+}
+
+html.light-mode .page-title {
+    background: none !important;
+    -webkit-text-fill-color: #0f172a !important;
+    color: #0f172a !important;
+}
+
+/* Specific elements background adjustments */
+html.light-mode .bg-zinc-950 {
+    background-color: var(--bg-darkest) !important;
+}
+
+html.light-mode .bg-zinc-950\/20 {
+    background-color: rgba(15, 23, 42, 0.02) !important;
+}
+
+html.light-mode .bg-zinc-950\/40 {
+    background-color: rgba(15, 23, 42, 0.04) !important;
+}
+
+html.light-mode .bg-zinc-950\/70 {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html.light-mode .bg-zinc-900 {
+    background-color: var(--bg-dark) !important;
+}
+
+html.light-mode .bg-zinc-900\/40 {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(20px);
+    border-color: rgba(15, 23, 42, 0.06) !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+html.light-mode .bg-zinc-900\/60 {
+    background-color: #f8fafc !important;
+}
+
+/* Border overrides */
+html.light-mode .border-zinc-800,
+html.light-mode .border-zinc-800\/80,
+html.light-mode .border-zinc-800\/60,
+html.light-mode .border-zinc-800\/40 {
+    border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Text overrides */
+html.light-mode .text-white:not(#hero-slider *, #hero-slider, .btn-primary *, .btn-primary, .btn-auth-action *, .btn-auth-action, .toast *, .toast, .bg-purple-500 *, .bg-cyan-500 *, .bg-rose-500 *, .bg-purple-650 *, .bg-purple-600 *, .bg-rose-600 *, .bg-emerald-600 *, .bg-emerald-555 *, .bg-emerald-500 *) {
+    color: #0f172a !important;
+}
+
+html.light-mode .text-slate-100:not(#hero-slider *),
+html.light-mode .text-slate-200:not(#hero-slider *),
+html.light-mode .text-slate-350:not(#hero-slider *),
+html.light-mode .text-slate-300:not(#hero-slider *) {
+    color: #1e293b !important; /* Slate 800 */
+}
+
+html.light-mode .text-slate-400:not(#hero-slider *),
+html.light-mode .text-slate-450:not(#hero-slider *) {
+    color: #475569 !important; /* Slate 600 */
+}
+
+html.light-mode .text-slate-500:not(#hero-slider *) {
+    color: #64748b !important; /* Slate 500 */
+}
+
+html.light-mode .text-purple-400 {
+    color: #7c3aed !important;
+}
+
+html.light-mode .text-cyan-400 {
+    color: #0891b2 !important;
+}
+
+html.light-mode .text-rose-450,
+html.light-mode .text-rose-400,
+html.light-mode .text-purple-450,
+html.light-mode .text-purple-400 {
+    color: #7c3aed !important;
+}
+
+html.light-mode .text-emerald-450,
+html.light-mode .text-emerald-400 {
+    color: #059669 !important;
+}
+
+/* Buttons and interactive items */
+html.light-mode .bg-zinc-800 {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+}
+
+html.light-mode .bg-zinc-800\/60 {
+    background-color: #e2e8f0 !important;
+    color: #7c3aed !important;
+}
+
+html.light-mode .bg-zinc-800\/50 {
+    background-color: #f1f5f9 !important;
+}
+
+html.light-mode .bg-zinc-850 {
+    background-color: #cbd5e1 !important;
+}
+
+html.light-mode .hover\:bg-zinc-900:hover {
+    background-color: #f1f5f9 !important;
+}
+
+html.light-mode .hover\:text-white:hover {
+    color: #7c3aed !important;
+}
+
+html.light-mode .bg-zinc-900\/40 form button {
+    border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light-mode .bg-zinc-900\/40 form button:hover {
+    border-color: var(--primary) !important;
+}
+
+/* Inputs and Forms */
+html.light-mode .auth-card .input-icon-wrapper {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+}
+
+html.light-mode .auth-card .input-icon-wrapper input,
+html.light-mode .auth-card .input-icon-wrapper textarea,
+html.light-mode .auth-card .input-icon-wrapper select {
+    color: #0f172a !important;
+    background: transparent !important;
+}
+
+html.light-mode select option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
+html.light-mode .auth-card .input-icon-wrapper:focus-within {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1) !important;
+    background-color: #ffffff !important;
+}
+
+html.light-mode input:-webkit-autofill,
+html.light-mode input:-webkit-autofill:hover, 
+html.light-mode input:-webkit-autofill:focus, 
+html.light-mode input:-webkit-autofill:active {
+    -webkit-text-fill-color: #0f172a !important;
+}
+
+html.light-mode iframe {
+    filter: none !important;
+}
+
+/* User avatar initials menu */
+html.light-mode .user-avatar-circle {
+    border-color: #ffffff !important;
+}
+
+/* Navigation headers and sticky bar */
+html.light-mode header {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Mobile dropdown menu */
+html.light-mode #mobile-menu {
+    background-color: #ffffff !important;
+    border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Footer overrides */
+html.light-mode footer {
+    background-color: #f1f5f9 !important;
+    border-top: 1px solid #cbd5e1 !important;
+}
+
+html.light-mode footer * {
+    color: #475569 !important;
+}
+
+html.light-mode footer h4 {
+    color: #0f172a !important;
+}
+
+html.light-mode footer .text-purple-400 {
+    color: #7c3aed !important;
+}
+
+/* Auth Cards */
+html.light-mode .auth-card {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light-mode .auth-header h2 {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: #0f172a !important;
+    color: #0f172a !important;
+}
+
+html.light-mode .auth-header p {
+    color: var(--text-secondary) !important;
+}
+
+html.light-mode .forgot-password-link {
+    color: var(--accent) !important;
+}
+
+html.light-mode .forgot-password-link:hover {
+    color: var(--accent-hover) !important;
+}
+
+html.light-mode .form-checkbox-row label {
+    color: var(--text-secondary) !important;
+}
+
+html.light-mode .form-checkbox-row label a {
+    color: var(--accent) !important;
+}
+
+html.light-mode .form-checkbox-row input[type="checkbox"] {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+}
+
+html.light-mode .auth-divider {
+    color: var(--text-muted) !important;
+}
+
+html.light-mode .auth-footer-link p {
+    color: var(--text-secondary) !important;
+}
+
+html.light-mode .auth-footer-link a {
+    color: var(--primary) !important;
+}
+
+html.light-mode .auth-footer-link a:hover {
+    color: var(--primary-hover) !important;
+    text-decoration: underline;
+}
+
+html.light-mode .btn-auth-action {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
+    border-color: transparent !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.2) !important;
+}
+
+html.light-mode .btn-auth-action:hover {
+    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35) !important;
+}
+
+html.light-mode .social-btn {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #475569 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+html.light-mode .social-btn:hover {
+    background-color: #f8fafc !important;
+    border-color: #bcd5e1 !important;
+    color: #0f172a !important;
+}
+
+/* About Screen overrides */
+html.light-mode .about-hero-section {
+    background: linear-gradient(135deg, #f1f5f9 0%, #ffffff 100%) !important;
+    border-color: #cbd5e1 !important;
+}
+
+html.light-mode .stat-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* Checkout KHQR Body */
+html.light-mode .bg-zinc-900/40 .bg-zinc-950/40 {
+    background-color: #f8fafc !important;
+}
+
+html.light-mode .bg-zinc-900/60 {
+    background-color: #f8fafc !important;
+}
+
+/* Image mix-blend-screen fix */
+html.light-mode .mix-blend-screen {
+    mix-blend-mode: multiply !important;
+}
+
+/* Back buttons */
+html.light-mode a.bg-zinc-900 {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #475569 !important;
+}
+
+html.light-mode a.bg-zinc-900:hover {
+    background-color: #f1f5f9 !important;
+    color: #7c3aed !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* Floating favorite buttons light mode overrides */
+html.light-mode button[title="Add to Wishlist"],
+html.light-mode button[title="Remove from Wishlist"] {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(15, 23, 42, 0.1) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light-mode button[title="Add to Wishlist"] i {
+    color: #64748b !important;
+}
+
+html.light-mode button[title="Add to Wishlist"]:hover {
+    background-color: rgba(243, 232, 255, 0.9) !important;
+    border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+html.light-mode button[title="Add to Wishlist"]:hover i {
+    color: #7c3aed !important;
+}
+
+html.light-mode button[title="Remove from Wishlist"] i {
+    color: #7c3aed !important;
+}
+
+html.light-mode button[title="Remove from Wishlist"]:hover {
+    background-color: rgba(243, 232, 255, 0.9) !important;
+    border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+/* Favorites page remove button style (remains dark with a visible white cross icon in both light and dark themes) */
+button[title="Remove from Favorites"] {
+    background-color: rgba(24, 24, 27, 0.9) !important;
+    border-color: rgba(63, 63, 70, 0.6) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+button[title="Remove from Favorites"] i {
+    color: #f8fafc !important;
+}
+
+button[title="Remove from Favorites"]:hover {
+    background-color: rgba(124, 58, 237, 0.9) !important;
+    border-color: rgba(168, 85, 247, 0.6) !important;
+}
+
+button[title="Remove from Favorites"]:hover i {
+    color: #ffffff !important;
+}
+
+/* Header badge border style overrides */
+.wishlist-badge,
+.cart-badge {
+    border: 2px solid #09090b !important;
+}
+
+html.light-mode .wishlist-badge,
+html.light-mode .cart-badge {
+    border-color: #ffffff !important;
+}
+
+/* Toast light mode overrides */
+html.light-mode .toast {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(15, 23, 42, 0.08);
+    color: #0f172a;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+}
+
+html.light-mode .toast-message {
+    color: #0f172a;
+}
+
+html.light-mode .toast-close {
+    color: #64748b;
+}
+
+html.light-mode .toast-close:hover {
+    color: #0f172a;
+}
+
+
+

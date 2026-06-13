@@ -1,0 +1,116 @@
+<header class="sticky top-0 z-50 w-full border-b border-zinc-800/80 bg-zinc-950/70 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+
+        <!-- Logo Brand -->
+        <div class="flex items-center">
+            <a href="{{ url_for('home') }}" class="flex items-center gap-2.5 text-xl font-black tracking-wider text-white group">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="YSTAA Logo" class="w-10 h-10 object-contain transition-all group-hover:scale-105">
+                <span class="font-extrabold tracking-tight hidden sm:inline font-heading">YSTAA <span class="text-purple-400">SHOPP</span></span>
+                <span class="font-extrabold tracking-tight inline sm:hidden text-purple-400 font-heading">YSTAA</span>
+            </a>
+        </div>
+
+        <!-- Navigation Links Matrix (Desktop) -->
+        <nav class="hidden md:flex space-x-1">
+            <a href="{{ url_for('home') }}"
+               class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200
+               {{ 'bg-zinc-800/60 text-purple-400' if request.endpoint == 'home' else 'text-slate-400 hover:bg-zinc-900 hover:text-white' }}">
+                Home
+            </a>
+            <a href="{{ url_for('products') }}"
+               class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200
+               {{ 'bg-zinc-800/60 text-purple-400' if request.endpoint == 'products' else 'text-slate-400 hover:bg-zinc-900 hover:text-white' }}">
+                Product
+            </a>
+            <a href="{{ url_for('contact') }}"
+               class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200
+               {{ 'bg-zinc-800/60 text-purple-400' if request.endpoint == 'contact' else 'text-slate-400 hover:bg-zinc-900 hover:text-white' }}">
+                Contact Us
+            </a>
+            <a href="{{ url_for('about') }}"
+               class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200
+               {{ 'bg-zinc-800/60 text-purple-400' if request.endpoint == 'about' else 'text-slate-400 hover:bg-zinc-900 hover:text-white' }}">
+                About Us
+            </a>
+        </nav>
+
+        <!-- Functional Icon Configuration & Auth -->
+        <div class="flex items-center gap-2 sm:gap-4">
+
+            <!-- Theme Toggle Mode Button -->
+            <button id="theme-toggle" type="button" class="p-2 rounded-lg transition-colors text-slate-400 hover:bg-zinc-900 hover:text-white cursor-pointer" title="Toggle Theme">
+                <i class="fas fa-sun text-lg" id="theme-toggle-sun-icon"></i>
+                <i class="fas fa-moon text-lg hidden" id="theme-toggle-moon-icon"></i>
+            </button>
+
+            <!-- Favorites Action Link -->
+            <a href="{{ url_for('favorites') }}"
+               title="Favorites"
+               class="relative p-2 rounded-lg transition-colors group {{ 'text-purple-400 bg-zinc-800/50' if request.endpoint == 'favorites' else 'text-slate-400 hover:bg-zinc-900 hover:text-white' }}">
+                <i class="fas fa-heart text-lg"></i>
+                {% if wishlist_count and wishlist_count > 0 %}
+                <span class="wishlist-badge absolute -top-1 -right-1 bg-purple-600 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
+                    {{ wishlist_count }}
+                </span>
+                {% endif %}
+            </a>
+
+            <!-- Cart Action Link -->
+            <a href="{{ url_for('cart') }}"
+               title="Cart"
+               class="relative p-2 rounded-lg transition-colors group {{ 'text-purple-400 bg-zinc-800/50' if request.endpoint == 'cart' else 'text-slate-400 hover:bg-zinc-900 hover:text-white' }}">
+                <i class="fas fa-shopping-cart text-lg"></i>
+               {% if cart_count and cart_count > 0 %}
+                <span class="cart-badge absolute -top-1 -right-2 bg-emerald-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
+                    {{ cart_count }}
+                </span>
+                {% endif %}
+            </a>
+
+            <!-- Border Separator -->
+            <span class="h-6 w-px bg-zinc-850 hidden sm:block" aria-hidden="true"></span>
+
+            <!-- User Auth Dropdown or Login Button -->
+            <div class="hidden sm:block">
+                {% if logged_in_user %}
+                <a href="{{ url_for('profile') }}" class="flex items-center gap-2.5 focus:outline-none group" id="user-menu-button" title="View Profile & Purchase History">
+                    <div class="user-avatar-circle group-hover:scale-105 transition-transform duration-200">
+                        {{ logged_in_user[:2] | upper }}
+                    </div>
+                    <span class="hidden lg:inline text-sm font-semibold text-slate-300 group-hover:text-purple-400 transition-colors">{{ logged_in_user }}</span>
+                    <i class="fas fa-chevron-down text-[9px] text-slate-500 hidden lg:inline group-hover:text-purple-400 transition-colors"></i>
+                </a>
+                {% else %}
+                <a href="{{ url_for('login') }}"
+                   class="inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-zinc-900 hover:bg-purple-600 border border-zinc-800 transition-all duration-200 shadow-sm">
+                    Login
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile menu button -->
+            <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-zinc-900 focus:outline-none">
+                <span class="sr-only">Open main menu</span>
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="md:hidden hidden bg-zinc-950 border-b border-zinc-800 absolute w-full shadow-lg" id="mobile-menu">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a href="{{ url_for('home') }}" class="block px-3 py-2 rounded-md text-base font-semibold {{ 'bg-zinc-900 text-purple-400' if request.endpoint == 'home' else 'text-slate-300 hover:text-white hover:bg-zinc-900' }}">Home</a>
+            <a href="{{ url_for('products') }}" class="block px-3 py-2 rounded-md text-base font-semibold {{ 'bg-zinc-900 text-purple-400' if request.endpoint == 'products' else 'text-slate-300 hover:text-white hover:bg-zinc-900' }}">Product</a>
+            <a href="{{ url_for('contact') }}" class="block px-3 py-2 rounded-md text-base font-semibold {{ 'bg-zinc-900 text-purple-400' if request.endpoint == 'contact' else 'text-slate-300 hover:text-white hover:bg-zinc-900' }}">Contact Us</a>
+            <a href="{{ url_for('about') }}" class="block px-3 py-2 rounded-md text-base font-semibold {{ 'bg-zinc-900 text-purple-400' if request.endpoint == 'about' else 'text-slate-300 hover:text-white hover:bg-zinc-900' }}">About Us</a>
+            {% if logged_in_user %}
+            <a href="{{ url_for('profile') }}" class="block px-3 py-2 rounded-md text-base font-semibold {{ 'bg-zinc-900 text-purple-400' if request.endpoint == 'profile' else 'text-slate-300 hover:text-white hover:bg-zinc-900' }}">My Profile ({{ logged_in_user }})</a>
+            <a href="{{ url_for('favorites') }}" class="block px-3 py-2 rounded-md text-base font-semibold text-slate-300 hover:text-white hover:bg-zinc-900">My Favorites</a>
+            <a href="{{ url_for('logout') }}" class="block px-3 py-2 rounded-md text-base font-semibold text-purple-400 hover:bg-purple-950/20 border-t border-zinc-800 mt-2 pt-2">Log Out</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="block px-3 py-2 rounded-md text-base font-semibold text-slate-300 hover:text-white hover:bg-zinc-900 border-t border-zinc-800 mt-2 pt-2">Login / Register</a>
+            {% endif %}
+        </div>
+    </div>
+</header>

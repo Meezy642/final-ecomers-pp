@@ -1,0 +1,252 @@
+{% extends "customer/layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+    <!-- Interactive Hero Slider -->
+    <section class="relative rounded-3xl overflow-hidden shadow-2xl bg-zinc-900 border border-zinc-800 h-[350px] md:h-[480px] group" id="hero-slider">
+        <!-- Slides Container -->
+        <div class="relative w-full h-full overflow-hidden">
+            
+            <!-- Slide 1: Neon Futurewear -->
+            <div class="slide absolute inset-0 transition-all duration-1000 ease-in-out opacity-100 z-10">
+                <img src="{{ url_for('static', filename='img/slide1.jpg') }}" 
+                     alt="Neon Futurewear" 
+                     class="w-full h-full object-cover object-center transform scale-100 transition-transform duration-[5000ms] ease-out brightness-[0.55]">
+                <div class="absolute inset-0 flex flex-col justify-center items-start p-8 sm:p-12 md:p-16 pointer-events-none">
+                    <span class="inline-block bg-purple-500 text-white text-[10px] font-extrabold tracking-widest uppercase px-3.5 py-1.5 rounded-full mb-4 shadow-lg shadow-purple-500/20 border border-purple-400/30">
+                        Limited Time Only
+                    </span>
+                    <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight mb-2 font-heading">
+                        Neon Futurewear
+                    </h2>
+                    <p class="text-sm sm:text-lg text-slate-300 max-w-md mb-8 leading-relaxed">
+                        Explore our latest premium arrivals. Save up to 50% on all orders this weekend!
+                    </p>
+                    <a href="{{ url_for('products') }}"
+                       class="pointer-events-auto btn-primary px-6 py-3.5">
+                        Explore Futurewear
+                        <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Slide 2: Next-Gen Electronics -->
+            <div class="slide absolute inset-0 transition-all duration-1000 ease-in-out opacity-0 z-0">
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1200" 
+                     alt="Electronics" 
+                     class="w-full h-full object-cover object-center transform scale-100 transition-transform duration-[5000ms] ease-out brightness-[0.55]">
+                <div class="absolute inset-0 flex flex-col justify-center items-start p-8 sm:p-12 md:p-16 pointer-events-none">
+                    <span class="inline-block bg-cyan-500 text-slate-950 text-[10px] font-extrabold tracking-widest uppercase px-3.5 py-1.5 rounded-full mb-4 shadow-lg shadow-cyan-500/20 border border-cyan-400/30">
+                        New Tech Arrivals
+                    </span>
+                    <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight mb-2 font-heading">
+                        Next-Gen Tech
+                    </h2>
+                    <p class="text-sm sm:text-lg text-slate-300 max-w-md mb-8 leading-relaxed">
+                        Upgrade your setup with premium headphones, solid state drives, and high-performance gaming monitors.
+                    </p>
+                    <a href="{{ url_for('products', category='electronics') }}"
+                       class="pointer-events-auto btn-primary px-6 py-3.5" style="background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%); box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);">
+                        Explore Electronics
+                        <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Slide 3: Jewelry Collection -->
+            <div class="slide absolute inset-0 transition-all duration-1000 ease-in-out opacity-0 z-0">
+                <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1200" 
+                     alt="Jewelry" 
+                     class="w-full h-full object-cover object-center transform scale-100 transition-transform duration-[5000ms] ease-out brightness-[0.55]">
+                <div class="absolute inset-0 flex flex-col justify-center items-start p-8 sm:p-12 md:p-16 pointer-events-none">
+                    <span class="inline-block bg-rose-500 text-white text-[10px] font-extrabold tracking-widest uppercase px-3.5 py-1.5 rounded-full mb-4 shadow-lg shadow-rose-500/20 border border-rose-400/30">
+                        Exclusive Jewels
+                    </span>
+                    <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight mb-2 font-heading">
+                        Timeless Elegance
+                    </h2>
+                    <p class="text-sm sm:text-lg text-slate-300 max-w-md mb-8 leading-relaxed">
+                        Add a statement of luxury with solid gold chains, princess wedding rings, and silver bracelets.
+                    </p>
+                    <a href="{{ url_for('products', category='jewelery') }}"
+                       class="pointer-events-auto btn-primary px-6 py-3.5" style="background: linear-gradient(135deg, var(--danger) 0%, #e11d48 100%); box-shadow: 0 4px 14px rgba(244, 63, 94, 0.3);">
+                        Shop Accessories
+                        <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Left/Right Nav Arrows -->
+        <button onclick="prevSlide()" 
+                class="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-white flex items-center justify-center transition-all z-20 opacity-0 group-hover:opacity-100 focus:outline-none">
+            <i class="fas fa-chevron-left text-sm"></i>
+        </button>
+        <button onclick="nextSlide()" 
+                class="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-white flex items-center justify-center transition-all z-20 opacity-0 group-hover:opacity-100 focus:outline-none">
+            <i class="fas fa-chevron-right text-sm"></i>
+        </button>
+
+        <!-- Slide Indicators -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2.5 z-20">
+            <button onclick="goToSlide(0)" class="indicator w-2 h-2 rounded-full bg-white/30 transition-all focus:outline-none"></button>
+            <button onclick="goToSlide(1)" class="indicator w-2 h-2 rounded-full bg-white/30 transition-all focus:outline-none"></button>
+            <button onclick="goToSlide(2)" class="indicator w-2 h-2 rounded-full bg-white/30 transition-all focus:outline-none"></button>
+        </div>
+    </section>
+
+    <!-- Dynamic Products Section -->
+    <section class="space-y-6">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+            <h3 class="text-2xl font-extrabold tracking-tight text-white font-heading">Shop Collection</h3>
+            <a href="{{ url_for('products') }}" class="group text-sm font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors">
+                View All Catalog
+                <span class="block transform group-hover:translate-x-1 transition-transform">&rarr;</span>
+            </a>
+        </div>
+
+        <!-- Fully Responsive Grid Layout -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for itm in item %}
+            <div class="group flex flex-col bg-zinc-900/40 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-sm hover:shadow-xl hover:border-purple-500/50 transform hover:-translate-y-1 transition-all duration-300">
+
+                <!-- Product Image Window -->
+                <div class="relative bg-zinc-950/20 aspect-square overflow-hidden w-full p-4 flex items-center justify-center border-b border-zinc-800/60">
+                    <a href="{{ url_for('view_product', item_id=itm.id) }}" class="block w-full h-full flex items-center justify-center">
+                        <img src="{{ itm.image }}" alt="{{ itm.title }}" class="max-w-full max-h-48 object-contain transform group-hover:scale-105 transition-transform duration-500 ease-in-out mix-blend-screen">
+                    </a>
+
+                    <!-- Badge Notification System -->
+                    <div class="absolute top-4 left-4 z-10">
+                        {% if itm.discount %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-650 text-white shadow-sm border border-indigo-500/30">
+                                -{{ itm.discount }}%
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-purple-600 text-white shadow-sm border border-purple-500/30">
+                                POPULAR
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Favorite Button Overlay -->
+                    <div class="absolute top-4 right-4 z-10">
+                        {% if itm.id in wishlist %}
+                        <form action="{{ url_for('remove_from_wishlist', item_id=itm.id) }}" method="POST" class="m-0">
+                            <button type="submit" class="w-8 h-8 rounded-full bg-zinc-900/80 hover:bg-purple-950/80 text-purple-500 border border-zinc-800 flex items-center justify-center transition-all shadow-md cursor-pointer hover:scale-110" title="Remove from Wishlist">
+                                <i class="fas fa-heart text-xs"></i>
+                            </button>
+                        </form>
+                        {% else %}
+                        <form action="{{ url_for('add_to_wishlist', item_id=itm.id) }}" method="POST" class="m-0">
+                            <button type="submit" class="w-8 h-8 rounded-full bg-zinc-900/80 hover:bg-purple-950/80 text-slate-400 hover:text-purple-500 border border-zinc-800 flex items-center justify-center transition-all shadow-md cursor-pointer hover:scale-110" title="Add to Wishlist">
+                                <i class="far fa-heart text-xs"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Product Text Configurations -->
+                <div class="p-5 flex-grow flex flex-col justify-between space-y-3">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-purple-400 mb-1">{{ itm.category }}</p>
+                        <h4 class="text-base font-bold text-slate-100 line-clamp-1 group-hover:text-purple-400 transition-colors leading-snug">
+                            <a href="{{ url_for('view_product', item_id=itm.id) }}">{{ itm.title }}</a>
+                        </h4>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                        <div class="flex items-baseline gap-2">
+                            {% if itm.old_price %}
+                                <span class="text-xs font-medium text-slate-500 line-through">${{ "%.2f"|format(itm.old_price) }}</span>
+                                <span class="text-lg font-extrabold text-purple-400">${{ "%.2f"|format(itm.price) }}</span>
+                            {% else %}
+                                <span class="text-lg font-extrabold text-white">${{ "%.2f"|format(itm.price) }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button Footer -->
+                <div class="p-4 pt-0 mt-auto">
+                    <form action="{{ url_for('add_to_cart', item_id=itm.id) }}" method="POST" class="w-full m-0">
+                        <button type="submit" class="w-full inline-flex justify-center items-center py-2.5 rounded-xl btn-primary text-white border border-purple-500/20 transition-all duration-200 text-sm font-bold font-heading gap-2 cursor-pointer shadow-sm" title="Add to Cart">
+                            Add to Cart <i class="fas fa-shopping-cart text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+
+<!-- JS for Interactive Hero Slider -->
+<script>
+    let currentSlideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+    const indicators = document.querySelectorAll('.indicator');
+    let autoplayInterval;
+
+    function updateSlides() {
+        slides.forEach((slide, idx) => {
+            const img = slide.querySelector('img');
+            if (idx === currentSlideIndex) {
+                slide.classList.remove('opacity-0', 'z-0');
+                slide.classList.add('opacity-100', 'z-10');
+                if (img) {
+                    img.classList.remove('scale-100');
+                    img.classList.add('scale-105');
+                }
+            } else {
+                slide.classList.remove('opacity-100', 'z-10');
+                slide.classList.add('opacity-0', 'z-0');
+                if (img) {
+                    img.classList.remove('scale-105');
+                    img.classList.add('scale-100');
+                }
+            }
+        });
+        
+        indicators.forEach((indicator, idx) => {
+            if (idx === currentSlideIndex) {
+                indicator.classList.remove('bg-white/30');
+                indicator.classList.add('bg-white', 'w-6');
+            } else {
+                indicator.classList.remove('bg-white', 'w-6');
+                indicator.classList.add('bg-white/30');
+            }
+        });
+    }
+
+    function nextSlide() {
+        currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+        updateSlides();
+    }
+
+    function prevSlide() {
+        currentSlideIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
+        updateSlides();
+    }
+
+    function goToSlide(index) {
+        currentSlideIndex = index;
+        updateSlides();
+        resetAutoplay();
+    }
+
+    function resetAutoplay() {
+        clearInterval(autoplayInterval);
+        autoplayInterval = setInterval(nextSlide, 5000);
+    }
+
+    // Initialize
+    updateSlides();
+    resetAutoplay();
+</script>
+{% endblock %}

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-zinc-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YSTAA SHOPP - Premium E-Commerce</title>
+    <!-- Early theme detector to prevent screen flashing -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.documentElement.classList.add('light-mode');
+            } else {
+                document.documentElement.classList.remove('light-mode');
+            }
+        })();
+    </script>
+    <!-- Tailwind CSS Script CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Premium Custom Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.1.4">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="flex flex-col min-h-full bg-zinc-950 text-slate-100 antialiased font-sans">
+
+    {% include 'share/header.html' %}
+
+    <!-- Pushes footer down on empty or short pages -->
+    <main class="flex-grow">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% include 'share/footer.html' %}
+
+    <!-- Sleek Toast Notification System -->
+    <div id="toast-container"></div>
+
+    <script>
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icon = document.createElement('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-info-circle';
+            if (type === 'error') {
+                icon.className = 'fas fa-exclamation-triangle';
+            }
+            
+            const text = document.createElement('span');
+            text.className = 'toast-message';
+            text.textContent = message;
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'toast-close';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = () => {
+                toast.classList.add('toast-fade-out');
+                setTimeout(() => toast.remove(), 300);
+            };
+            
+            toast.appendChild(icon);
+            toast.appendChild(text);
+            toast.appendChild(closeBtn);
+            container.appendChild(toast);
+            
+            // Auto dismiss toast after 4.5 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.classList.add('toast-fade-out');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4500);
+        }
+
+        // Trigger Flask flashed messages
+        document.addEventListener("DOMContentLoaded", function() {
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        showToast("{{ message }}", "{{ 'success' if category == 'success' else 'error' }}");
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        });
+
+        // Theme toggle logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('theme-toggle');
+            const sunIcon = document.getElementById('theme-toggle-sun-icon');
+            const moonIcon = document.getElementById('theme-toggle-moon-icon');
+
+            function updateIcons() {
+                const isLight = document.documentElement.classList.contains('light-mode');
+                if (toggleButton) {
+                    if (isLight) {
+                        sunIcon.classList.add('hidden');
+                        moonIcon.classList.remove('hidden');
+                    } else {
+                        sunIcon.classList.remove('hidden');
+                        moonIcon.classList.add('hidden');
+                    }
+                }
+            }
+
+            if (toggleButton) {
+                updateIcons();
+                toggleButton.addEventListener('click', () => {
+                    const isLight = document.documentElement.classList.toggle('light-mode');
+                    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                    updateIcons();
+                    showToast(`Switched to ${isLight ? 'Light' : 'Dark'} mode`, 'info');
+                });
+            }
+        });
+
+        // AJAX Wishlist & Cart Operations
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            const action = form.getAttribute('action') || '';
+            
+            if (action.includes('add_to_wishlist') || action.includes('remove_from_wishlist')) {
+                e.preventDefault();
+                
+                const isAdding = action.includes('add_to_wishlist');
+                const itemId = action.split('/').pop();
+                
+                fetch(action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show dynamic success toast
+                        showToast(isAdding ? 'Added to favorites' : 'Removed from favorites', 'success');
+                        
+                        if (window.location.pathname.includes('/favorites') || window.location.pathname.includes('/wishlist')) {
+                            // If we are on wishlist page, remove the card dynamically
+                            const card = form.closest('.group');
+                            if (card) {
+                                card.style.transition = 'all 0.3s ease';
+                                card.style.opacity = '0';
+                                card.style.transform = 'scale(0.9)';
+                                setTimeout(() => {
+                                    card.remove();
+                                    const grid = document.querySelector('.grid');
+                                    if (grid && grid.querySelectorAll('.group').length === 0) {
+                                        window.location.reload();
+                                    }
+                                }, 300);
+                            }
+                        } else {
+                            // Find and update all wishlist forms for this specific item ID on current page
+                            const targetForms = document.querySelectorAll(`form[action*="add_to_wishlist/${itemId}"], form[action*="remove_from_wishlist/${itemId}"]`);
+                            
+                            targetForms.forEach(f => {
+                                const btn = f.querySelector('button');
+                                const icon = btn.querySelector('i');
+                                
+                                if (isAdding) {
+                                    f.setAttribute('action', `/remove_from_wishlist/${itemId}`);
+                                    btn.setAttribute('title', 'Remove from Wishlist');
+                                    if (icon) {
+                                        icon.className = 'fas fa-heart text-xs text-purple-500';
+                                    }
+                                    btn.className = 'w-8 h-8 rounded-full bg-zinc-900/80 hover:bg-purple-950/80 text-purple-500 border border-zinc-800 flex items-center justify-center transition-all shadow-md cursor-pointer hover:scale-110';
+                                    
+                                    // Handle product detail page elements if they exist
+                                    if (btn.classList.contains('py-4') || btn.classList.contains('sm:h-14')) {
+                                        btn.className = 'w-full sm:w-auto flex-shrink-0 flex items-center justify-center bg-purple-950/20 border border-purple-800 text-purple-400 hover:bg-purple-900/30 py-4 px-4 sm:w-14 sm:h-14 sm:py-0 rounded-xl transition-all duration-300 shadow-sm cursor-pointer';
+                                        if (icon) {
+                                            icon.className = 'fas fa-heart text-xl text-purple-500';
+                                        }
+                                    }
+                                } else {
+                                    f.setAttribute('action', `/add_to_wishlist/${itemId}`);
+                                    btn.setAttribute('title', 'Add to Wishlist');
+                                    if (icon) {
+                                        icon.className = 'far fa-heart text-xs text-slate-400';
+                                    }
+                                    btn.className = 'w-8 h-8 rounded-full bg-zinc-900/80 hover:bg-purple-950/80 text-slate-400 hover:text-purple-500 border border-zinc-800 flex items-center justify-center transition-all shadow-md cursor-pointer hover:scale-110';
+                                    
+                                    // Handle product detail page elements if they exist
+                                    if (btn.classList.contains('py-4') || btn.classList.contains('sm:h-14')) {
+                                        btn.className = 'w-full sm:w-auto flex-shrink-0 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 hover:bg-purple-950/20 hover:text-purple-400 text-slate-400 py-4 px-4 sm:w-14 sm:h-14 sm:py-0 rounded-xl transition-all duration-300 shadow-sm cursor-pointer';
+                                        if (icon) {
+                                            icon.className = 'far fa-heart text-xl';
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        
+                        // Update global header count badge
+                        const wishlistBadgeContainer = document.querySelector('a[href*="/favorites"]');
+                        if (wishlistBadgeContainer) {
+                            let badge = wishlistBadgeContainer.querySelector('.wishlist-badge');
+                            let newCount = data.wishlist_count;
+                            
+                            if (newCount > 0) {
+                                if (!badge) {
+                                    badge = document.createElement('span');
+                                    badge.className = 'wishlist-badge absolute -top-1 -right-1 bg-purple-600 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[16px] text-center';
+                                    wishlistBadgeContainer.appendChild(badge);
+                                }
+                                badge.textContent = newCount;
+                            } else {
+                                if (badge) {
+                                    badge.remove();
+                                }
+                            }
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('AJAX Wishlist Error:', err);
+                });
+            } else if (action.includes('add_to_cart')) {
+                e.preventDefault();
+                
+                fetch(action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show dynamic success toast
+                        showToast(data.message || 'Added to cart!', 'success');
+                        
+                        // Update global header cart count badge
+                        const cartBadgeContainer = document.querySelector('a[href*="/cart"]');
+                        if (cartBadgeContainer) {
+                            let badge = cartBadgeContainer.querySelector('.cart-badge');
+                            let newCount = data.cart_count;
+                            
+                            if (newCount > 0) {
+                                if (!badge) {
+                                    badge = document.createElement('span');
+                                    badge.className = 'cart-badge absolute -top-1 -right-2 bg-emerald-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[16px] text-center';
+                                    cartBadgeContainer.appendChild(badge);
+                                }
+                                badge.textContent = newCount;
+                            } else {
+                                if (badge) {
+                                    badge.remove();
+                                }
+                            }
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('AJAX Cart Error:', err);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

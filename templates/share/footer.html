@@ -1,0 +1,70 @@
+<footer class="bg-zinc-950 text-slate-400 border-t border-zinc-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <!-- Main Formatted Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-zinc-900">
+
+            <!-- Context Brand Column -->
+            <div class="space-y-4">
+                <h3 class="text-white text-lg font-black tracking-wider uppercase flex items-center gap-2 font-heading">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="YSTAA Logo" class="w-6 h-6 object-contain"> YSTAA SHOPP
+                </h3>
+                <p class="text-sm text-slate-400 leading-relaxed max-w-sm">
+                    A premium, high-performance static e-commerce concept interface running on a modular Python back-end platform.
+                </p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="space-y-4">
+                <h4 class="text-slate-200 text-sm font-semibold uppercase tracking-wider">Quick Links</h4>
+                <ul class="grid grid-cols-2 gap-2 text-sm">
+                    <li>
+                        <a href="{{ url_for('home') }}" class="hover:text-white transition-colors duration-150 flex items-center gap-1">
+                            <span class="text-purple-400 text-xs">&middot;</span> Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('products') }}" class="hover:text-white transition-colors duration-150 flex items-center gap-1">
+                            <span class="text-purple-400 text-xs">&middot;</span> Product
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('contact') }}" class="hover:text-white transition-colors duration-150 flex items-center gap-1">
+                            <span class="text-purple-400 text-xs">&middot;</span> Contact
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('about') }}" class="hover:text-white transition-colors duration-150 flex items-center gap-1">
+                            <span class="text-purple-400 text-xs">&middot;</span> About Us
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Support info -->
+            <div class="space-y-4">
+                <h4 class="text-slate-200 text-sm font-semibold uppercase tracking-wider">Contact Info</h4>
+                <ul class="space-y-2.5 text-sm">
+                    <li class="flex items-center gap-3">
+                        <i class="fas fa-envelope text-purple-400 w-4 text-center"></i>
+                        <a href="mailto:support@ystaashopp.com" class="hover:text-white transition-colors">support@ystaashopp.com</a>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-map-marker-alt text-purple-400 w-4 text-center mt-0.5"></i>
+                        <span class="text-slate-400">2002 Street, Phnom Penh, Cambodia</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footnote -->
+        <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <p>&copy; 2026 YSTAA SHOPP. All Rights Reserved.</p>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-slate-400 transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-slate-400 transition-colors">Terms of Service</a>
+            </div>
+        </div>
+
+    </div>
+</footer>

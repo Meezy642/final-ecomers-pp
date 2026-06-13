@@ -1,0 +1,145 @@
+{% extends "customer/layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div>
+        <h2 class="page-title font-heading text-3xl font-black">Your Shopping Cart</h2>
+        <p class="text-slate-400 text-sm mt-1">Manage the items you've added to your cart before proceeding to checkout</p>
+    </div>
+
+    {% if cart_items %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <!-- Cart Items List Panel -->
+        <div class="lg:col-span-2 bg-zinc-900/40 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 bg-zinc-950/40 border-b border-zinc-800">Product Details</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 bg-zinc-950/40 border-b border-zinc-800 hidden sm:table-cell">Price</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 bg-zinc-950/40 border-b border-zinc-800">Quantity</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 bg-zinc-950/40 border-b border-zinc-800">Total</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 bg-zinc-950/40 border-b border-zinc-800"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart_items %}
+                        <tr class="hover:bg-zinc-900/20 transition-colors">
+                            <!-- Product Info Cell -->
+                            <td class="px-6 py-5 border-b border-zinc-800/60 align-middle">
+                                <div class="flex items-center gap-4">
+                                    <a href="{{ url_for('view_product', item_id=item.product.id) }}" class="flex-shrink-0 bg-white p-2 rounded-xl border border-zinc-800 w-16 h-16 flex items-center justify-center shadow-md">
+                                        <img src="{{ item.product.image }}" alt="{{ item.product.title }}" class="max-w-full max-h-full object-contain mix-blend-multiply">
+                                    </a>
+                                    <div>
+                                        <span class="font-bold text-white hover:text-purple-400 transition-colors block text-sm sm:text-base line-clamp-1">
+                                            <a href="{{ url_for('view_product', item_id=item.product.id) }}">{{ item.product.title }}</a>
+                                        </span>
+                                        <p class="text-[10px] uppercase font-bold text-purple-400 mt-1 tracking-wider">{{ item.product.category }}</p>
+                                        <!-- Mobile Price -->
+                                        <p class="text-xs font-semibold text-slate-400 sm:hidden mt-1">${{ "%.2f"|format(item.product.price) }}</p>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Price Cell (Desktop) -->
+                            <td class="px-6 py-5 border-b border-zinc-800/60 align-middle text-slate-300 hidden sm:table-cell font-medium">
+                                ${{ "%.2f"|format(item.product.price) }}
+                            </td>
+
+                            <!-- Quantity Control Cell -->
+                            <td class="px-6 py-5 border-b border-zinc-800/60 align-middle">
+                                <div class="flex items-center bg-zinc-950/40 border border-zinc-800 rounded-xl p-1 w-fit">
+                                    <form action="{{ url_for('decrease_cart', item_id=item.product.id) }}" method="POST" class="inline">
+                                        <button type="submit" class="w-8 h-8 rounded-lg flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-purple-650 hover:text-white transition-colors cursor-pointer text-slate-300" title="Decrease Quantity">
+                                            <i class="fas fa-minus text-[10px]"></i>
+                                        </button>
+                                    </form>
+
+                                    <input type="text" value="{{ item.quantity }}" readonly class="w-8 text-center bg-transparent border-0 text-white font-bold text-sm focus:outline-none focus:ring-0">
+
+                                    <form action="{{ url_for('increase_cart', item_id=item.product.id) }}" method="POST" class="inline">
+                                        <button type="submit" class="w-8 h-8 rounded-lg flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-purple-650 hover:text-white transition-colors cursor-pointer text-slate-300" title="Increase Quantity">
+                                            <i class="fas fa-plus text-[10px]"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+
+                            <!-- Total Price Cell -->
+                            <td class="px-6 py-5 border-b border-zinc-800/60 align-middle font-bold text-white">
+                                ${{ "%.2f"|format(item.item_total) }}
+                            </td>
+
+                            <!-- Remove Button Cell -->
+                            <td class="px-6 py-5 border-b border-zinc-800/60 align-middle text-right">
+                                <form action="{{ url_for('remove_from_cart', item_id=item.product.id) }}" method="POST" class="m-0 inline">
+                                    <button type="submit" 
+                                            class="text-slate-400 hover:text-purple-400 transition-colors p-2 cursor-pointer" 
+                                            title="Remove Item"
+                                            onclick="return confirm('Are you sure you want to remove this item from your cart?');">
+                                        <i class="fas fa-trash-alt text-base"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Order Summary Panel -->
+        <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <h3 class="text-lg font-bold text-white border-b border-zinc-800 pb-4 font-heading">Order Summary</h3>
+            
+            <div class="flex justify-between items-center text-sm text-slate-400">
+                <span>Subtotal</span>
+                <span class="font-bold text-white">${{ "%.2f"|format(total_price) }}</span>
+            </div>
+            
+            <div class="flex justify-between items-center text-sm text-slate-400">
+                <span>Estimated Shipping</span>
+                <span class="text-emerald-450 font-bold">FREE</span>
+            </div>
+            
+            <div class="flex justify-between items-center text-sm text-slate-400">
+                <span>Tax</span>
+                <span class="font-bold text-white">$0.00</span>
+            </div>
+
+            <div class="flex justify-between items-center text-base font-bold text-white border-t border-zinc-800 pt-4 mt-2">
+                <span>Total Amount</span>
+                <span class="text-lg text-purple-400">${{ "%.2f"|format(total_price) }}</span>
+            </div>
+
+            <a href="{{ url_for('checkout') }}" class="w-full flex items-center justify-center gap-2 btn-primary py-3.5 rounded-xl font-bold transition-all text-white cursor-pointer font-heading">
+                Proceed to Checkout <i class="fas fa-arrow-right text-xs ml-1"></i>
+            </a>
+
+            <a href="{{ url_for('clear_cart') }}"
+               class="block text-center text-xs text-purple-400 hover:text-purple-300 hover:underline mt-4 font-semibold transition-colors cursor-pointer"
+               onclick="return confirm('Are you sure you want to completely empty your shopping cart?');">
+               Empty Shopping Cart
+            </a>
+            
+            <a href="{{ url_for('products') }}" class="block text-center text-sm text-purple-400 hover:text-purple-300 font-medium mt-2 transition-colors cursor-pointer">
+                <i class="fas fa-chevron-left text-xs mr-1"></i> Continue Shopping
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty Cart State -->
+    <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-12 text-center shadow-xl max-w-2xl mx-auto space-y-6">
+        <div class="w-20 h-20 rounded-full bg-zinc-950 flex items-center justify-center mx-auto border border-zinc-800">
+            <i class="fas fa-shopping-basket text-3xl text-slate-650"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white font-heading">Your shopping cart is empty</h3>
+        <p class="text-slate-400 text-sm max-w-md mx-auto">Looks like you haven't added anything to your cart yet. Explore our products to get started.</p>
+        <a href="{{ url_for('products') }}" class="btn-primary inline-flex items-center gap-2">
+            Shop Our Products <i class="fas fa-shopping-bag text-xs"></i>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
