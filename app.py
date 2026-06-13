@@ -6,6 +6,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from flask import Flask, render_template, request, redirect, url_for, make_response, session, flash, jsonify
+from itsdangerous import URLSafeTimedSerializer
 from dotenv import load_dotenv
 from items import items
 
@@ -19,8 +20,6 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "premium_ecommerce_secret_ke
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8797666810:AAFNxpfrEAzVrUVTSYc8cGOwChHRc56AesU")
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "-1003719714118,1415187900")
 TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-
-RESET_TOKENS = {}
 
 # --- SMTP EMAIL CONFIGURATION ---
 SMTP_SERVER = "smtp.gmail.com"
@@ -765,8 +764,8 @@ def forgot_password():
                 
         if username_found:
             # Generate a secure reset token
-            token = secrets.token_urlsafe(32)
-            RESET_TOKENS[token] = username_found
+            serializer = URLSafeTimedSerializer(app.secret_key)
+            token = serializer.dumps(username_found, salt='password-reset-salt')
             
             # Construct reset URL (supporting proxy headers for live domains like Vercel)
             host = request.headers.get('X-Forwarded-Host') or request.headers.get('Host') or request.host
@@ -793,7 +792,13 @@ def forgot_password():
 
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
-    username = RESET_TOKENS.get(token)
+    serializer = URLSafeTimedSerializer(app.secret_key)
+    try:
+        # Token expires after 1 hour (3600 seconds)
+        username = serializer.loads(token, salt='password-reset-salt', max_age=3600)
+    except Exception:
+        username = None
+        
     if not username:
         flash("The reset link is invalid or has expired.", "error")
         return redirect(url_for('login'))
@@ -814,8 +819,6 @@ def reset_password(token):
         if username in users:
             users[username]['password'] = new_password
             save_users(users)
-            # Remove used token
-            RESET_TOKENS.pop(token, None)
             flash("Your password has been reset successfully. Please log in with your new password.", "success")
             return redirect(url_for('login'))
         else:
