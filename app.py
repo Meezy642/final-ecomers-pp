@@ -768,8 +768,12 @@ def forgot_password():
             token = secrets.token_urlsafe(32)
             RESET_TOKENS[token] = username_found
             
-            # Construct reset URL
-            reset_url = request.url_root.rstrip('/') + url_for('reset_password', token=token)
+            # Construct reset URL (supporting proxy headers for live domains like Vercel)
+            host = request.headers.get('X-Forwarded-Host') or request.headers.get('Host') or request.host
+            proto = request.headers.get('X-Forwarded-Proto') or request.scheme
+            base_url = f"{proto}://{host}"
+            reset_url = base_url.rstrip('/') + url_for('reset_password', token=token)
+
             # Send real email
             send_reset_email(email, username_found, reset_url)
 
