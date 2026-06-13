@@ -4,42 +4,84 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="flex flex-col lg:flex-row gap-8 items-start">
         
-        <!-- Left Column: User Information Card (4 cols equivalent) -->
-        <div class="w-full lg:w-80 flex-shrink-0 bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/80 shadow-2xl relative overflow-hidden text-center">
-            <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
-            
-            <div class="relative space-y-6">
-                <!-- Large User Initials Avatar -->
-                <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-black mx-auto shadow-xl shadow-purple-900/30 border-2 border-zinc-800">
-                    {{ username[:2] | upper }}
-                </div>
+        <!-- Left Column: User Information & Security Cards -->
+        <div class="w-full lg:w-80 flex-shrink-0 space-y-6">
+            <!-- User Information Card -->
+            <div class="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/80 shadow-2xl relative overflow-hidden text-center">
+                <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
                 
-                <div class="space-y-1">
-                    <h2 class="text-xl font-extrabold text-white font-heading tracking-tight">{{ username }}</h2>
-                    <p class="text-xs text-slate-400 break-all">{{ email }}</p>
+                <div class="relative space-y-6">
+                    <!-- Large User Initials Avatar -->
+                    <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-black mx-auto shadow-xl shadow-purple-900/30 border-2 border-zinc-800">
+                        {{ username[:2] | upper }}
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <h2 class="text-xl font-extrabold text-white font-heading tracking-tight">{{ username }}</h2>
+                        <p class="text-xs text-slate-400 break-all">{{ email }}</p>
+                    </div>
+                    
+                    <!-- Account Info Matrix -->
+                    <div class="border-t border-zinc-800/60 pt-4 text-left space-y-3">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-semibold">Account Status</span>
+                            <span class="font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Active</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-semibold">Verification</span>
+                            <span class="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Verified</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-semibold">Member Since</span>
+                            <span class="font-bold text-slate-300">June 2026</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Destructive Log Out Button -->
+                    <div class="border-t border-zinc-800/60 pt-4">
+                        <a href="{{ url_for('logout') }}" class="w-full py-3 bg-rose-950/20 hover:bg-rose-900/40 border border-rose-800/60 hover:border-rose-500 text-rose-400 hover:text-rose-300 font-bold rounded-xl transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer shadow-md hover:scale-[1.02]">
+                            <i class="fas fa-sign-out-alt"></i> Log Out
+                        </a>
+                    </div>
                 </div>
-                
-                <!-- Account Info Matrix -->
-                <div class="border-t border-zinc-800/60 pt-4 text-left space-y-3">
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="text-slate-400 font-semibold">Account Status</span>
-                        <span class="font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Active</span>
-                    </div>
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="text-slate-400 font-semibold">Verification</span>
-                        <span class="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Verified</span>
-                    </div>
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="text-slate-400 font-semibold">Member Since</span>
-                        <span class="font-bold text-slate-300">June 2026</span>
-                    </div>
-                </div>
-                
-                <!-- Destructive Log Out Button -->
-                <div class="border-t border-zinc-800/60 pt-4">
-                    <a href="{{ url_for('logout') }}" class="w-full py-3 bg-rose-950/20 hover:bg-rose-900/40 border border-rose-800/60 hover:border-rose-500 text-rose-400 hover:text-rose-300 font-bold rounded-xl transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer shadow-md hover:scale-[1.02]">
-                        <i class="fas fa-sign-out-alt"></i> Log Out
-                    </a>
+            </div>
+
+            <!-- Change Password Card -->
+            <div class="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/80 shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
+                <div class="relative space-y-4">
+                    <h3 class="font-heading text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                        <i class="fas fa-lock text-purple-400"></i> Reset Password
+                    </h3>
+                    <p class="text-slate-450 text-[10px] leading-relaxed">Update your login credentials to secure your account.</p>
+                    
+                    <form action="{{ url_for('change_password') }}" method="POST" class="auth-form space-y-3.5">
+                        <div class="form-group-field text-left">
+                            <label for="current_password" class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Current Password</label>
+                            <div class="input-icon-wrapper mt-1">
+                                <i class="fas fa-key input-icon text-[10px]"></i>
+                                <input type="password" id="current_password" name="current_password" placeholder="••••••••" required class="text-xs py-1">
+                            </div>
+                        </div>
+                        <div class="form-group-field text-left">
+                            <label for="new_password" class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">New Password</label>
+                            <div class="input-icon-wrapper mt-1">
+                                <i class="fas fa-lock input-icon text-[10px]"></i>
+                                <input type="password" id="new_password" name="new_password" placeholder="••••••••" required class="text-xs py-1">
+                            </div>
+                        </div>
+                        <div class="form-group-field text-left">
+                            <label for="confirm_password" class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Confirm New Password</label>
+                            <div class="input-icon-wrapper mt-1">
+                                <i class="fas fa-shield-alt input-icon text-[10px]"></i>
+                                <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required class="text-xs py-1">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-auth-action w-full py-3 text-white text-xs font-bold cursor-pointer transition-all duration-300 hover:scale-[1.02] shadow-md flex items-center justify-center gap-1.5 mt-2">
+                            Update Password <i class="fas fa-save text-[10px]"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

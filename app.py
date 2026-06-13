@@ -662,6 +662,40 @@ def profile():
     
     return render_template('customer/profile.html', username=username, email=email, orders=user_orders)
 
+@app.route('/change_password', methods=['POST'])
+def change_password():
+    if 'username' not in session:
+        flash("Please log in first.", "error")
+        return redirect(url_for('login'))
+        
+    username = session['username']
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+    
+    if not current_password or not new_password or not confirm_password:
+        flash("All password fields are required.", "error")
+        return redirect(url_for('profile'))
+        
+    if new_password != confirm_password:
+        flash("New passwords do not match.", "error")
+        return redirect(url_for('profile'))
+        
+    users = load_users()
+    user_info = users.get(username)
+    
+    if not user_info or user_info.get('password') != current_password:
+        flash("Incorrect current password.", "error")
+        return redirect(url_for('profile'))
+        
+    # Update password
+    users[username]['password'] = new_password
+    save_users(users)
+    
+    flash("Your password has been updated successfully.", "success")
+    return redirect(url_for('profile'))
+
+
 def find_order_by_id(order_id):
     if not os.path.exists(ORDERS_FILE):
         return None, None
