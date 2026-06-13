@@ -90,38 +90,34 @@ else:
     CONTACTS_FILE = 'contacts.json'
     ORDERS_FILE = 'orders.json'
 
-# Vercel KV REST API helpers
-KV_URL = os.environ.get("KV_REST_API_URL")
-KV_TOKEN = os.environ.get("KV_REST_API_TOKEN")
+# MongoDB configuration
+MONGO_URI = os.environ.get("MONGO_URI")
 
-def kv_request(cmd_list):
-    if not KV_URL or not KV_TOKEN:
-        return None
+db_client = None
+db = None
+
+if MONGO_URI:
     try:
-        headers = {
-            "Authorization": f"Bearer {KV_TOKEN}",
-            "Content-Type": "application/json"
-        }
-        response = requests.post(KV_URL, json=cmd_list, headers=headers, timeout=5)
-        if response.status_code == 200:
-            res_json = response.json()
-            return res_json.get("result")
-        else:
-            print(f"KV Request failed (status {response.status_code}): {response.text}")
-            return None
+        from pymongo import MongoClient
+        db_client = MongoClient(MONGO_URI)
+        db = db_client.get_database("ystaashopp")
+        print("Connected to MongoDB successfully!", flush=True)
     except Exception as e:
-        print(f"KV Request error: {e}")
-        return None
+        print(f"Failed to connect to MongoDB: {e}", flush=True)
 
 def load_users():
-    if KV_URL and KV_TOKEN:
-        val = kv_request(["GET", "ystaa:users"])
-        if val:
-            try:
-                return json.loads(val)
-            except Exception as e:
-                print(f"Error decoding KV users JSON: {e}")
-        print("Vercel KV: ystaa:users not found, falling back to local file template.", flush=True)
+    if db is not None:
+        try:
+            users_cursor = db.users.find()
+            users = {}
+            for doc in users_cursor:
+                users[doc["_id"]] = {
+                    "email": doc["email"],
+                    "password": doc["password"]
+                }
+            return users
+        except Exception as e:
+            print(f"MongoDB load_users error: {e}", flush=True)
 
     if not os.path.exists(USERS_FILE):
         return {}
@@ -132,12 +128,17 @@ def load_users():
         return {}
 
 def save_users(users):
-    if KV_URL and KV_TOKEN:
-        val_str = json.dumps(users, indent=4)
-        res = kv_request(["SET", "ystaa:users", val_str])
-        if res == "OK":
+    if db is not None:
+        try:
+            for username, data in users.items():
+                db.users.update_one(
+                    {"_id": username},
+                    {"$set": {"email": data["email"], "password": data["password"]}},
+                    upsert=True
+                )
             return True
-        print("Vercel KV: Failed to write users, falling back to local file write.", flush=True)
+        except Exception as e:
+            print(f"MongoDB save_users error: {e}", flush=True)
 
     try:
         with open(USERS_FILE, 'w') as f:
@@ -148,20 +149,14 @@ def save_users(users):
         return False
 
 def save_contact(contact_data):
-    contacts = []
-    if KV_URL and KV_TOKEN:
-        val = kv_request(["GET", "ystaa:contacts"])
-        if val:
-            try:
-                contacts = json.loads(val)
-            except Exception:
-                contacts = []
-        contacts.append(contact_data)
-        res = kv_request(["SET", "ystaa:contacts", json.dumps(contacts, indent=4)])
-        if res == "OK":
+    if db is not None:
+        try:
+            db.contacts.insert_one(contact_data)
             return
-        print("Vercel KV: Failed to save contact, falling back to local file write.", flush=True)
+        except Exception as e:
+            print(f"MongoDB save_contact error: {e}", flush=True)
 
+    contacts = []
     if os.path.exists(CONTACTS_FILE):
         try:
             with open(CONTACTS_FILE, 'r') as f:
@@ -176,23 +171,19 @@ def save_contact(contact_data):
         print(f"Error saving contact query: {e}")
 
 def save_order(username, order_data):
-    orders = {}
-    if KV_URL and KV_TOKEN:
-        val = kv_request(["GET", "ystaa:orders"])
-        if val:
-            try:
-                orders = json.loads(val)
-            except Exception:
-                orders = {}
-        key = username if username else "guest"
-        if key not in orders:
-            orders[key] = []
-        orders[key].append(order_data)
-        res = kv_request(["SET", "ystaa:orders", json.dumps(orders, indent=4)])
-        if res == "OK":
+    if db is not None:
+        try:
+            key = username if username else "guest"
+            doc = {
+                "username": key,
+                "order_data": order_data
+            }
+            db.orders.insert_one(doc)
             return
-        print("Vercel KV: Failed to save order, falling back to local file write.", flush=True)
+        except Exception as e:
+            print(f"MongoDB save_order error: {e}", flush=True)
 
+    orders = {}
     if os.path.exists(ORDERS_FILE):
         try:
             with open(ORDERS_FILE, 'r') as f:
@@ -212,15 +203,15 @@ def save_order(username, order_data):
         print(f"Error saving order: {e}")
 
 def load_orders(username):
-    if KV_URL and KV_TOKEN:
-        val = kv_request(["GET", "ystaa:orders"])
-        if val:
-            try:
-                orders = json.loads(val)
-                return orders.get(username, [])
-            except Exception:
-                pass
-        print("Vercel KV: ystaa:orders not found, falling back to local file.", flush=True)
+    if db is not None:
+        try:
+            orders_cursor = db.orders.find({"username": username})
+            orders_list = []
+            for doc in orders_cursor:
+                orders_list.append(doc["order_data"])
+            return orders_list
+        except Exception as e:
+            print(f"MongoDB load_orders error: {e}", flush=True)
 
     if not os.path.exists(ORDERS_FILE):
         return []
