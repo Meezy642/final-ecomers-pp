@@ -69,10 +69,27 @@ def send_telegram_message(text):
         except Exception as e:
             print(f"Failed to push notification to Telegram for {cid}: {e}", flush=True)
 
-# File database mock helpers
+# File database mock helpers (Vercel has a read-only filesystem, so use /tmp)
+IS_VERCEL = os.environ.get("VERCEL") or os.environ.get("NOW_REGION")
 
-USERS_FILE = 'users.json'
-CONTACTS_FILE = 'contacts.json'
+if IS_VERCEL:
+    USERS_FILE = '/tmp/users.json'
+    CONTACTS_FILE = '/tmp/contacts.json'
+    ORDERS_FILE = '/tmp/orders.json'
+    
+    # Copy initial files if they exist in the project root but not in /tmp
+    import shutil
+    for f_name in ['users.json', 'orders.json']:
+        tmp_path = f'/tmp/{f_name}'
+        if not os.path.exists(tmp_path) and os.path.exists(f_name):
+            try:
+                shutil.copy(f_name, tmp_path)
+            except Exception as e:
+                print(f"Error copying initial DB file {f_name}: {e}")
+else:
+    USERS_FILE = 'users.json'
+    CONTACTS_FILE = 'contacts.json'
+    ORDERS_FILE = 'orders.json'
 
 def load_users():
     if not os.path.exists(USERS_FILE):
@@ -105,7 +122,6 @@ def save_contact(contact_data):
     except Exception as e:
         print(f"Error saving contact query: {e}")
 
-ORDERS_FILE = 'orders.json'
 
 def save_order(username, order_data):
     orders = {}
