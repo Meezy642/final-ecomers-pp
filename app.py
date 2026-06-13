@@ -754,17 +754,9 @@ def forgot_password():
             
             # Construct reset URL
             reset_url = request.url_root.rstrip('/') + url_for('reset_password', token=token)
-            
-            # Send notification to Telegram
-            telegram_text = f"<b>🔑 PASSWORD RESET REQUEST</b>\n"
-            telegram_text += f"<b>----------------------------------</b>\n\n"
-            telegram_text += f"👤 <b>Username:</b> {username_found}\n"
-            telegram_text += f"📧 <b>Email:</b> <code>{email}</code>\n\n"
-            telegram_text += f"🔗 <b>Reset Link:</b>\n{reset_url}"
-            send_telegram_message(telegram_text)
-            
             # Send real email
             send_reset_email(email, username_found, reset_url)
+
             
             # Log to console
             print(f"Password reset link generated for {username_found}: {reset_url}", flush=True)
