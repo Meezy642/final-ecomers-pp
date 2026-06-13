@@ -545,22 +545,52 @@
         const advisor = document.getElementById('booking-advisor').value;
         const dateVal = document.getElementById('booking-date').value;
         const timeSlot = document.getElementById('booking-time').value;
+        const name = document.getElementById('booking-name').value;
+        const phone = document.getElementById('booking-phone').value;
+        const notes = document.getElementById('booking-notes').value;
         
         // Format booking date beautifully
         const dateObj = new Date(dateVal);
         const options = { day: 'numeric', month: 'short', year: 'numeric' };
         const formattedDate = dateObj.toLocaleDateString('en-US', options);
         
-        // Update summary texts
-        document.getElementById('res-service').textContent = service;
-        document.getElementById('res-advisor').textContent = advisor;
-        document.getElementById('res-time').textContent = `${formattedDate} @ ${timeSlot}`;
-        
-        // Hide form and expose booking success card
-        document.getElementById('booking-form').classList.add('hidden');
-        document.getElementById('booking-success').classList.remove('hidden');
-        
-        showToast("Styling booking requested successfully!", "success");
+        // Send data to server via AJAX
+        fetch('/api/book_showroom', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                phone: phone,
+                service: service,
+                advisor: advisor,
+                date: formattedDate,
+                time: timeSlot,
+                notes: notes
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Update summary texts
+                document.getElementById('res-service').textContent = service;
+                document.getElementById('res-advisor').textContent = advisor;
+                document.getElementById('res-time').textContent = `${formattedDate} @ ${timeSlot}`;
+                
+                // Hide form and expose booking success card
+                document.getElementById('booking-form').classList.add('hidden');
+                document.getElementById('booking-success').classList.remove('hidden');
+                
+                showToast("Styling booking requested successfully!", "success");
+            } else {
+                showToast("Failed to request booking. Please try again.", "error");
+            }
+        })
+        .catch(err => {
+            console.error("Booking Error:", err);
+            showToast("A system error occurred. Please try again.", "error");
+        });
     }
 
     function resetBookingForm() {

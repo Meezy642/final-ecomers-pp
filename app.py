@@ -16,7 +16,26 @@ BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8797666810:AAFNxpfrEAzVrUVTSYc
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "-1003719714118,1415187900")
 TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
+def send_telegram_message(text):
+    chat_ids = [cid.strip() for cid in CHAT_ID.split(",") if cid.strip()]
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json"
+    }
+    for cid in chat_ids:
+        payload = {
+            "text": text,
+            "parse_mode": "HTML",
+            "chat_id": cid
+        }
+        try:
+            telegram_response = requests.post(TELEGRAM_URL, json=payload, headers=headers, timeout=5)
+            print(f"Telegram Bot Status for {cid}: {telegram_response.status_code}", flush=True)
+        except Exception as e:
+            print(f"Failed to push notification to Telegram for {cid}: {e}", flush=True)
+
 # File database mock helpers
+
 USERS_FILE = 'users.json'
 CONTACTS_FILE = 'contacts.json'
 
@@ -175,10 +194,47 @@ def contact():
             "message": message
         }
         save_contact(contact_query)
+
+        # Notify via Telegram
+        telegram_text = f"<b>✉️ NEW CONTACT INQUIRY RECEIVED</b>\n"
+        telegram_text += f"<b>----------------------------------</b>\n\n"
+        telegram_text += f"👤 <b>Name:</b> {name}\n"
+        telegram_text += f"📧 <b>Email:</b> <code>{email}</code>\n"
+        telegram_text += f"📝 <b>Subject:</b> {subject}\n\n"
+        telegram_text += f"💬 <b>Message:</b>\n<i>{message}</i>"
+        send_telegram_message(telegram_text)
+
         flash("Thank you! Your message has been sent successfully.", "success")
         return redirect(url_for('contact'))
 
     return render_template('customer/contact.html')
+
+@app.route('/api/book_showroom', methods=['POST'])
+def book_showroom():
+    data = request.get_json() or {}
+    name = data.get('name')
+    phone = data.get('phone')
+    service = data.get('service')
+    advisor = data.get('advisor')
+    date_val = data.get('date')
+    time_slot = data.get('time')
+    notes = data.get('notes', '')
+
+    # Notify via Telegram
+    telegram_text = f"<b>👑 NEW VIP SHOWROOM BOOKING</b>\n"
+    telegram_text += f"<b>----------------------------------</b>\n\n"
+    telegram_text += f"👤 <b>Client:</b> {name}\n"
+    telegram_text += f"📞 <b>Phone:</b> <code>{phone}</code>\n"
+    telegram_text += f"📅 <b>Date:</b> {date_val}\n"
+    telegram_text += f"⏰ <b>Time:</b> {time_slot}\n"
+    telegram_text += f"💎 <b>Service:</b> {service}\n"
+    telegram_text += f"👔 <b>Advisor:</b> {advisor}\n"
+    if notes:
+        telegram_text += f"\n📝 <b>Special Requests:</b>\n<i>{notes}</i>"
+
+    send_telegram_message(telegram_text)
+    return jsonify({"success": true})
+
 
 @app.route('/about')
 def about():
@@ -572,24 +628,8 @@ def place_order():
     telegram_text += item_list_text
     telegram_text += f"<b>----------------------------------</b>\n"
     telegram_text += f"💰 <b>TOTAL PAID: ${total_price:.2f} USD ({payment_display})</b>"
+    send_telegram_message(telegram_text)
 
-    chat_ids = [cid.strip() for cid in CHAT_ID.split(",") if cid.strip()]
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json"
-    }
-
-    for cid in chat_ids:
-        payload = {
-            "text": telegram_text,
-            "parse_mode": "HTML",
-            "chat_id": cid
-        }
-        try:
-            telegram_response = requests.post(TELEGRAM_URL, json=payload, headers=headers, timeout=5)
-            print(f"Telegram Bot Status for {cid}: {telegram_response.status_code}", flush=True)
-        except Exception as e:
-            print(f"Failed to push notification to Telegram for {cid}: {e}", flush=True)
 
     # Redirect to success page and clear cart
     response = make_response(redirect(url_for('order_success')))
