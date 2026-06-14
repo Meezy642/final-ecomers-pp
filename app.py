@@ -32,13 +32,121 @@ def send_reset_email(to_email, username, reset_url):
         print("SMTP_PASSWORD is not configured. Skipping email dispatch.", flush=True)
         return False
     try:
-        msg = MIMEMultipart()
+        msg = MIMEMultipart('alternative')
         msg['From'] = f"YSTAA SHOPP <{SMTP_EMAIL}>"
         msg['To'] = to_email
         msg['Subject'] = "Reset Your Password"
         
-        body = f"Hello {username},\n\nReset your password:\n\n{reset_url}"
-        msg.attach(MIMEText(body, 'plain'))
+        # Plain text version (fallback)
+        text_body = (
+            f"Hello {username},\n\n"
+            f"We received a request to reset your password for your YSTAA SHOPP account. "
+            f"Click the link below to choose a new password. This link is valid for 1 hour:\n\n"
+            f"{reset_url}\n\n"
+            f"If you did not request a password reset, you can safely ignore this email.\n\n"
+            f"YSTAA SHOPP - Phnom Penh, Cambodia"
+        )
+        
+        # HTML version
+        html_body = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Reset Your Password - YSTAA SHOPP</title>
+    <style>
+        body {{
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            margin: 0;
+            padding: 0;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }}
+        .header {{
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            padding: 30px;
+            text-align: center;
+        }}
+        .header h1 {{
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }}
+        .content {{
+            padding: 40px 30px;
+            line-height: 1.6;
+        }}
+        .content h2 {{
+            color: #ffffff;
+            margin-top: 0;
+            font-size: 20px;
+        }}
+        .content p {{
+            color: #94a3b8;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }}
+        .btn-container {{
+            text-align: center;
+            margin: 40px 0;
+        }}
+        .btn {{
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            display: inline-block;
+            box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.4);
+        }}
+        .footer {{
+            background-color: #0f172a;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #1f2937;
+        }}
+        .footer p {{
+            margin: 0;
+            color: #64748b;
+            font-size: 12px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>YSTAA SHOPP</h1>
+        </div>
+        <div class="content">
+            <h2>Hello {username},</h2>
+            <p>We received a request to reset your password. Click the button below to choose a new password. This link is valid for 1 hour.</p>
+            <div class="btn-container">
+                <a href="{reset_url}" class="btn">Reset Password</a>
+            </div>
+            <p style="margin-bottom: 0;">If you did not request a password reset, you can safely ignore this email.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 YSTAA SHOPP. All rights reserved.</p>
+            <p>Phnom Penh, Cambodia</p>
+        </div>
+    </div>
+</body>
+</html>"""
+
+        msg.attach(MIMEText(text_body, 'plain'))
+        msg.attach(MIMEText(html_body, 'html'))
         
         with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
             server.login(SMTP_EMAIL, SMTP_PASSWORD)
