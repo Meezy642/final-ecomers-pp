@@ -461,7 +461,7 @@ def book_showroom():
         telegram_text += f"\n📝 <b>Special Requests:</b>\n<i>{notes}</i>"
 
     send_telegram_message(telegram_text)
-    return jsonify({"success": true})
+    return jsonify({"success": True})
 
 
 @app.route('/about')
