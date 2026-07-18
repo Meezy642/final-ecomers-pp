@@ -221,7 +221,25 @@ def load_users():
             for doc in users_cursor:
                 users[doc["_id"]] = {
                     "email": doc["email"],
-                    "password": doc["password"]
+                    "password": doc["password"],
+                    "role": doc.get("role", "customer")
+                }
+            
+            # Safeguard: Auto-provision admin user if missing in MongoDB
+            if "admin" not in users:
+                db.users.update_one(
+                    {"_id": "admin"},
+                    {"$set": {
+                        "email": "admin@localhost.com",
+                        "password": "admin",
+                        "role": "admin"
+                    }},
+                    upsert=True
+                )
+                users["admin"] = {
+                    "email": "admin@localhost.com",
+                    "password": "admin",
+                    "role": "admin"
                 }
             return users
         except Exception as e:
@@ -238,10 +256,18 @@ def load_users():
 def save_users(users):
     if db is not None:
         try:
+            # Delete users in DB that are no longer in the dictionary
+            existing_usernames = set(users.keys())
+            db.users.delete_many({"_id": {"$nin": list(existing_usernames)}})
+
             for username, data in users.items():
                 db.users.update_one(
                     {"_id": username},
-                    {"$set": {"email": data["email"], "password": data["password"]}},
+                    {"$set": {
+                        "email": data["email"],
+                        "password": data["password"],
+                        "role": data.get("role", "customer")
+                    }},
                     upsert=True
                 )
             return True
