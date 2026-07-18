@@ -1,0 +1,43 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Categories{% endblock %}
+{% block breadcrumb %}Categories{% endblock %}
+{% block page_title %}Product Categories{% endblock %}
+{% block page_breadcrumb %}Products / Categories{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-tags"></i> Categories Overview</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Category Name</th>
+                        <th>Product Count</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category, count in categories.items() %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><span class="badge badge-primary">{{ category | title }}</span></td>
+                        <td>{{ count }}</td>
+                        <td>
+                            <div class="category-bar-inline">
+                                <div class="category-bar-fill" style="width: {{ (count / total_products * 100)|round(1) if total_products > 0 else 0 }}%"></div>
+                                <span>{{ (count / total_products * 100)|round(1) if total_products > 0 else 0 }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

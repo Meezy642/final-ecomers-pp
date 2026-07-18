@@ -1,0 +1,111 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ 'Edit Product' if edit_mode else 'Add Product' }}{% endblock %}
+{% block breadcrumb %}{{ 'Edit Product' if edit_mode else 'Add Product' }}{% endblock %}
+{% block page_title %}{{ 'Edit Product #' ~ product.id if edit_mode else 'Add New Product' }}{% endblock %}
+{% block page_breadcrumb %}Products / {{ 'Edit' if edit_mode else 'Add' }}{% endblock %}
+
+{% block content %}
+<div class="card card-form">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas {{ 'fa-edit' if edit_mode else 'fa-plus-circle' }}"></i>
+            {{ 'Edit Product' if edit_mode else 'Add New Product' }}
+        </h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin_edit_product', product_id=product.id) if edit_mode else url_for('admin_add_product') }}">
+            <div class="form-row">
+                <div class="form-group form-group-wide">
+                    <label for="title" class="form-label">Product Title</label>
+                    <input type="text" id="title" name="title" class="form-control" 
+                           value="{{ product.title if edit_mode else '' }}"
+                           placeholder="Enter product title" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="price" class="form-label">Price (USD)</label>
+                    <input type="number" id="price" name="price" class="form-control" step="0.01"
+                           value="{{ product.price if edit_mode else '' }}"
+                           placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="category" class="form-label">Category</label>
+                    <select id="category" name="category" class="form-control" required>
+                        <option value="">Select Category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {{ 'selected' if edit_mode and product.category == cat else '' }}>{{ cat | title }}</option>
+                        {% endfor %}
+                        <option value="__new__">+ Add New Category</option>
+                    </select>
+                    <input type="text" id="new_category" name="new_category" class="form-control mt-2" 
+                           placeholder="Enter new category name" style="display:none;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" name="description" class="form-control" rows="4" 
+                          placeholder="Enter product description" required>{{ product.description if edit_mode else '' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="image" class="form-label">Image URL</label>
+                <input type="url" id="image" name="image" class="form-control" 
+                       value="{{ product.image if edit_mode else '' }}"
+                       placeholder="https://example.com/image.png" required>
+                {% if edit_mode and product.image %}
+                <div class="image-preview mt-2">
+                    <img src="{{ product.image }}" alt="Preview" class="preview-img">
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="rating_rate" class="form-label">Rating (0-5)</label>
+                    <input type="number" id="rating_rate" name="rating_rate" class="form-control" 
+                           step="0.1" min="0" max="5"
+                           value="{{ product.rating.rate if edit_mode else '4.0' }}"
+                           placeholder="4.0">
+                </div>
+                <div class="form-group">
+                    <label for="rating_count" class="form-label">Rating Count</label>
+                    <input type="number" id="rating_count" name="rating_count" class="form-control" 
+                           min="0"
+                           value="{{ product.rating.count if edit_mode else '0' }}"
+                           placeholder="0">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {{ 'Update Product' if edit_mode else 'Create Product' }}
+                </button>
+                <a href="{{ url_for('admin_products') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    const categorySelect = document.getElementById('category');
+    const newCategoryInput = document.getElementById('new_category');
+
+    categorySelect.addEventListener('change', () => {
+        if (categorySelect.value === '__new__') {
+            newCategoryInput.style.display = 'block';
+            newCategoryInput.required = true;
+        } else {
+            newCategoryInput.style.display = 'none';
+            newCategoryInput.required = false;
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

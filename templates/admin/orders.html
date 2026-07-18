@@ -1,0 +1,155 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Orders{% endblock %}
+{% block breadcrumb %}Orders{% endblock %}
+{% block page_title %}Order Management{% endblock %}
+{% block page_breadcrumb %}Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-shopping-cart"></i> All Orders</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="admin-table" id="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in all_orders %}
+                    <tr>
+                        <td><span class="badge badge-info">{{ order.order_id }}</span></td>
+                        <td>
+                            <div class="user-cell">
+                                <img src="https://ui-avatars.com/api/?name={{ order.buyer_name }}&background=10b981&color=fff&size=32&font-size=0.5&bold=true" alt="" class="user-avatar-sm">
+                                <span>{{ order.buyer_name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ order.buyer_email }}</td>
+                        <td>{{ order.buyer_phone }}</td>
+                        <td class="text-success fw-bold">${{ "%.2f"|format(order.total_price) }}</td>
+                        <td><span class="badge badge-success">{{ order.payment_method | default('N/A') }}</span></td>
+                        <td>{{ order.timestamp }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="showOrderDetail('{{ order.order_id }}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No orders found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay" id="order-modal" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-receipt"></i> Order Details</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="order-modal-body">
+            <p class="text-muted">Loading...</p>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Store all orders data for modal display
+    const ordersData = {{ all_orders | tojson | safe }};
+
+    function showOrderDetail(orderId) {
+        const order = ordersData.find(o => o.order_id === orderId);
+        if (!order) return;
+
+        let itemsHtml = '';
+        if (order.items && order.items.length > 0) {
+            itemsHtml = '<div class="order-items-list">';
+            order.items.forEach(item => {
+                itemsHtml += `
+                    <div class="order-item-row">
+                        <img src="${item.image}" alt="" class="order-item-img">
+                        <div class="order-item-info">
+                            <span class="order-item-title">${item.title}</span>
+                            <span class="order-item-meta">Qty: ${item.quantity} × $${parseFloat(item.price).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            itemsHtml += '</div>';
+        }
+
+        const body = document.getElementById('order-modal-body');
+        body.innerHTML = `
+            <div class="order-detail-grid">
+                <div class="detail-item">
+                    <label>Order ID</label>
+                    <span class="badge badge-info">${order.order_id}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Date</label>
+                    <span>${order.timestamp}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Customer</label>
+                    <span>${order.buyer_name}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Email</label>
+                    <span>${order.buyer_email}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Phone</label>
+                    <span>${order.buyer_phone}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Address</label>
+                    <span>${order.buyer_address}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Payment</label>
+                    <span class="badge badge-success">${order.payment_method || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Total</label>
+                    <span class="text-success fw-bold" style="font-size: 1.2em;">$${parseFloat(order.total_price).toFixed(2)}</span>
+                </div>
+                ${order.order_notes ? `<div class="detail-item detail-full"><label>Notes</label><span>${order.order_notes}</span></div>` : ''}
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+            <h4 style="margin-bottom: 0.75rem; color: #e2e8f0; font-size: 0.95rem;">Order Items</h4>
+            ${itemsHtml}
+        `;
+
+        document.getElementById('order-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('order-modal').style.display = 'none';
+    }
+
+    document.getElementById('order-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('order-modal')) {
+            closeModal();
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -343,14 +343,19 @@ def inject_global_template_vars():
     wishlist = json.loads(wishlist_cookie) if wishlist_cookie else []
     wishlist_count = len(wishlist)
 
-    # 3. Logged-in User
+    # 3. Logged-in User & Role
     logged_in_user = session.get('username')
+    logged_in_user_role = None
+    if logged_in_user:
+        users = load_users()
+        logged_in_user_role = users.get(logged_in_user, {}).get('role')
 
     return dict(
         cart_count=cart_count,
         wishlist_count=wishlist_count,
         wishlist=wishlist,
-        logged_in_user=logged_in_user
+        logged_in_user=logged_in_user,
+        logged_in_user_role=logged_in_user_role
     )
 
 # --- ROUTES ---
@@ -487,6 +492,12 @@ def login():
         if user_found:
             session['username'] = user_found
             flash(f"Welcome back, {user_found}!", "success")
+            
+            # Check user role and redirect admins directly to admin dashboard
+            user_role = u_info.get('role')
+            if user_role == 'admin':
+                return redirect(url_for('admin_dashboard'))
+                
             return redirect(url_for('home'))
         else:
             flash("Invalid username/email or password.", "error")
@@ -1058,6 +1069,301 @@ def track_order_api(order_id):
             "success": False,
             "message": f"Order ID '{order_id}' not found. Please verify the code and try again."
         })
+
+# =====================================================
+# ADMIN PANEL ROUTES
+# =====================================================
+from functools import wraps
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        username = session.get('username')
+        if not username:
+            flash("Please log in to access the admin panel.", "error")
+            return redirect(url_for('login'))
+        users = load_users()
+        user = users.get(username, {})
+        if user.get('role') != 'admin':
+            flash("Access denied. Admin privileges required.", "error")
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def load_all_orders():
+    """Load all orders from all users."""
+    if db is not None:
+        try:
+            orders_cursor = db.orders.find()
+            all_orders = []
+            for doc in orders_cursor:
+                all_orders.append(doc["order_data"])
+            return all_orders
+        except Exception as e:
+            print(f"MongoDB load_all_orders error: {e}", flush=True)
+
+    if not os.path.exists(ORDERS_FILE):
+        return []
+    try:
+        with open(ORDERS_FILE, 'r') as f:
+            orders = json.load(f)
+            all_orders = []
+            for user_key, user_orders in orders.items():
+                all_orders.extend(user_orders)
+            return all_orders
+    except Exception:
+        return []
+
+def load_contacts():
+    """Load all contact messages."""
+    if db is not None:
+        try:
+            contacts_cursor = db.contacts.find()
+            return list(contacts_cursor)
+        except Exception as e:
+            print(f"MongoDB load_contacts error: {e}", flush=True)
+
+    if not os.path.exists(CONTACTS_FILE):
+        return []
+    try:
+        with open(CONTACTS_FILE, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+# --- Admin Dashboard ---
+@app.route('/admin')
+@app.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    users = load_users()
+    all_orders = load_all_orders()
+    total_revenue = sum(o.get('total_price', 0) for o in all_orders)
+
+    # Category breakdown
+    categories = {}
+    for item in items:
+        cat = item.get('category', 'uncategorized')
+        categories[cat] = categories.get(cat, 0) + 1
+
+    # Recent orders (latest 5)
+    recent_orders = sorted(all_orders, key=lambda x: x.get('timestamp', ''), reverse=True)[:5]
+
+    return render_template('admin/dashboard.html',
+        total_users=len(users),
+        total_products=len(items),
+        total_orders=len(all_orders),
+        total_revenue=total_revenue,
+        categories=categories,
+        recent_orders=recent_orders,
+        users=users
+    )
+
+# --- User Management ---
+@app.route('/admin/user')
+@admin_required
+def admin_users():
+    users = load_users()
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/user/add', methods=['GET', 'POST'])
+@admin_required
+def admin_add_user():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        role = request.form.get('role', 'customer')
+
+        if not username or not email or not password:
+            flash("All fields are required.", "error")
+            return redirect(url_for('admin_add_user'))
+
+        users = load_users()
+        if username in users:
+            flash("Username already exists.", "error")
+            return redirect(url_for('admin_add_user'))
+
+        users[username] = {
+            "email": email,
+            "password": password,
+            "role": role
+        }
+        save_users(users)
+        flash(f"User '{username}' created successfully!", "success")
+        return redirect(url_for('admin_users'))
+
+    return render_template('admin/user_form.html', edit_mode=False)
+
+@app.route('/admin/user/edit/<username>', methods=['GET', 'POST'])
+@admin_required
+def admin_edit_user(username):
+    users = load_users()
+    if username not in users:
+        flash("User not found.", "error")
+        return redirect(url_for('admin_users'))
+
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        role = request.form.get('role', 'customer')
+
+        if not email:
+            flash("Email is required.", "error")
+            return redirect(url_for('admin_edit_user', username=username))
+
+        users[username]['email'] = email
+        if password:
+            users[username]['password'] = password
+        users[username]['role'] = role
+        save_users(users)
+
+        flash(f"User '{username}' updated successfully!", "success")
+        return redirect(url_for('admin_users'))
+
+    return render_template('admin/user_form.html',
+        edit_mode=True,
+        edit_username=username,
+        user_data=users[username]
+    )
+
+@app.route('/admin/user/delete/<username>', methods=['POST'])
+@admin_required
+def admin_delete_user(username):
+    users = load_users()
+    if username not in users:
+        flash("User not found.", "error")
+        return redirect(url_for('admin_users'))
+
+    # Prevent self-deletion
+    if username == session.get('username'):
+        flash("You cannot delete your own account.", "error")
+        return redirect(url_for('admin_users'))
+
+    del users[username]
+    save_users(users)
+    flash(f"User '{username}' deleted successfully!", "success")
+    return redirect(url_for('admin_users'))
+
+# --- Product Management ---
+@app.route('/admin/products')
+@admin_required
+def admin_products():
+    return render_template('admin/products.html', products=items)
+
+@app.route('/admin/products/add', methods=['GET', 'POST'])
+@admin_required
+def admin_add_product():
+    categories = list(set(item['category'] for item in items))
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        price = float(request.form.get('price', 0))
+        category = request.form.get('category', '')
+        new_category = request.form.get('new_category', '').strip()
+        description = request.form.get('description', '').strip()
+        image = request.form.get('image', '').strip()
+        rating_rate = float(request.form.get('rating_rate', 4.0))
+        rating_count = int(request.form.get('rating_count', 0))
+
+        if category == '__new__' and new_category:
+            category = new_category
+
+        # Generate new ID
+        max_id = max((item['id'] for item in items), default=0)
+        new_id = max_id + 1
+
+        new_product = {
+            "id": new_id,
+            "title": title,
+            "price": price,
+            "description": description,
+            "category": category,
+            "image": image,
+            "rating": {
+                "rate": rating_rate,
+                "count": rating_count
+            }
+        }
+        items.append(new_product)
+        flash(f"Product '{title}' added successfully!", "success")
+        return redirect(url_for('admin_products'))
+
+    return render_template('admin/product_form.html',
+        edit_mode=False,
+        categories=categories
+    )
+
+@app.route('/admin/products/edit/<int:product_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_edit_product(product_id):
+    product = next((item for item in items if item['id'] == product_id), None)
+    if not product:
+        flash("Product not found.", "error")
+        return redirect(url_for('admin_products'))
+
+    categories = list(set(item['category'] for item in items))
+
+    if request.method == 'POST':
+        product['title'] = request.form.get('title', '').strip()
+        product['price'] = float(request.form.get('price', 0))
+        category = request.form.get('category', '')
+        new_category = request.form.get('new_category', '').strip()
+        if category == '__new__' and new_category:
+            category = new_category
+        product['category'] = category
+        product['description'] = request.form.get('description', '').strip()
+        product['image'] = request.form.get('image', '').strip()
+        product['rating']['rate'] = float(request.form.get('rating_rate', 4.0))
+        product['rating']['count'] = int(request.form.get('rating_count', 0))
+
+        flash(f"Product '{product['title']}' updated successfully!", "success")
+        return redirect(url_for('admin_products'))
+
+    return render_template('admin/product_form.html',
+        edit_mode=True,
+        product=product,
+        categories=categories
+    )
+
+@app.route('/admin/products/delete/<int:product_id>', methods=['POST'])
+@admin_required
+def admin_delete_product(product_id):
+    product = next((item for item in items if item['id'] == product_id), None)
+    if product:
+        items.remove(product)
+        flash(f"Product '{product['title']}' deleted successfully!", "success")
+    else:
+        flash("Product not found.", "error")
+    return redirect(url_for('admin_products'))
+
+@app.route('/admin/categories')
+@admin_required
+def admin_categories():
+    categories = {}
+    for item in items:
+        cat = item.get('category', 'uncategorized')
+        categories[cat] = categories.get(cat, 0) + 1
+    return render_template('admin/categories.html',
+        categories=categories,
+        total_products=len(items)
+    )
+
+# --- Order Management ---
+@app.route('/admin/orders')
+@admin_required
+def admin_orders():
+    all_orders = load_all_orders()
+    all_orders = sorted(all_orders, key=lambda x: x.get('timestamp', ''), reverse=True)
+    return render_template('admin/orders.html', all_orders=all_orders)
+
+# --- Contact Messages ---
+@app.route('/admin/contacts')
+@admin_required
+def admin_contacts():
+    contacts = load_contacts()
+    return render_template('admin/contacts.html', contacts=contacts)
+
 
 @app.errorhandler(404)
 def page_not_found(e):

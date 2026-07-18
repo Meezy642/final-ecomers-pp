@@ -32,6 +32,13 @@
                {{ 'bg-zinc-800/60 text-purple-400' if request.endpoint == 'about' else 'text-slate-400 hover:bg-zinc-900 hover:text-white' }}">
                 About Us
             </a>
+            {% if logged_in_user_role == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}"
+               class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200
+               {{ 'bg-indigo-900/60 text-indigo-400' if request.endpoint.startswith('admin') else 'text-indigo-400 hover:bg-indigo-950/40 hover:text-indigo-300' }}">
+                <i class="fas fa-user-shield mr-1"></i> Admin Panel
+            </a>
+            {% endif %}
         </nav>
 
         <!-- Functional Icon Configuration & Auth -->
@@ -104,6 +111,9 @@
             <a href="{{ url_for('products') }}" class="block px-3 py-2 rounded-md text-base font-semibold {{ 'bg-zinc-900 text-purple-400' if request.endpoint == 'products' else 'text-slate-300 hover:text-white hover:bg-zinc-900' }}">Product</a>
             <a href="{{ url_for('contact') }}" class="block px-3 py-2 rounded-md text-base font-semibold {{ 'bg-zinc-900 text-purple-400' if request.endpoint == 'contact' else 'text-slate-300 hover:text-white hover:bg-zinc-900' }}">Contact Us</a>
             <a href="{{ url_for('about') }}" class="block px-3 py-2 rounded-md text-base font-semibold {{ 'bg-zinc-900 text-purple-400' if request.endpoint == 'about' else 'text-slate-300 hover:text-white hover:bg-zinc-900' }}">About Us</a>
+            {% if logged_in_user_role == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="block px-3 py-2 rounded-md text-base font-semibold bg-indigo-950/20 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-950/30"><i class="fas fa-user-shield mr-1"></i> Admin Panel</a>
+            {% endif %}
             {% if logged_in_user %}
             <a href="{{ url_for('profile') }}" class="block px-3 py-2 rounded-md text-base font-semibold {{ 'bg-zinc-900 text-purple-400' if request.endpoint == 'profile' else 'text-slate-300 hover:text-white hover:bg-zinc-900' }}">My Profile ({{ logged_in_user }})</a>
             <a href="{{ url_for('favorites') }}" class="block px-3 py-2 rounded-md text-base font-semibold text-slate-300 hover:text-white hover:bg-zinc-900">My Favorites</a>

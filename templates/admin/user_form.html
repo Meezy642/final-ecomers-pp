@@ -1,0 +1,65 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ 'Edit User' if edit_mode else 'Add New User' }}{% endblock %}
+{% block breadcrumb %}{{ 'Edit User' if edit_mode else 'Add User' }}{% endblock %}
+{% block page_title %}{{ 'Edit User: ' + edit_username if edit_mode else 'Add New User' }}{% endblock %}
+{% block page_breadcrumb %}Users / {{ 'Edit' if edit_mode else 'Add' }}{% endblock %}
+
+{% block content %}
+<div class="card card-form">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas {{ 'fa-user-edit' if edit_mode else 'fa-user-plus' }}"></i> 
+            {{ 'Edit User' if edit_mode else 'Create New User' }}
+        </h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin_edit_user', username=edit_username) if edit_mode else url_for('admin_add_user') }}">
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" 
+                       value="{{ edit_username if edit_mode else '' }}" 
+                       {{ 'readonly' if edit_mode else '' }}
+                       placeholder="Enter username" required>
+                {% if edit_mode %}
+                <small class="form-text">Username cannot be changed</small>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="email" class="form-control" 
+                       value="{{ user_data.email if edit_mode else '' }}"
+                       placeholder="Enter email address" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">{{ 'New Password' if edit_mode else 'Password' }}</label>
+                <input type="password" id="password" name="password" class="form-control" 
+                       placeholder="{{ 'Leave blank to keep current password' if edit_mode else 'Enter password' }}"
+                       {{ '' if edit_mode else 'required' }}>
+                {% if edit_mode %}
+                <small class="form-text">Leave blank to keep the current password</small>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="role" class="form-label">Role</label>
+                <select id="role" name="role" class="form-control">
+                    <option value="customer" {{ 'selected' if (edit_mode and user_data.get('role', 'customer') == 'customer') else ('' if edit_mode else 'selected') }}>Customer</option>
+                    <option value="admin" {{ 'selected' if (edit_mode and user_data.get('role') == 'admin') else '' }}>Admin</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {{ 'Update User' if edit_mode else 'Create User' }}
+                </button>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

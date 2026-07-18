@@ -1,11 +1,16 @@
 {
+    "admin": {
+        "email": "admin@localhost.com",
+        "password": "admin",
+        "role": "admin"
+    },
     "YSTAA178": {
         "email": "meezyvaisex@gmail.com",
-        "password": "12345"
+        "password": "123",
+        "role": "customer"
     },
     "Lery123": {
         "email": "leryapolojoy@gmail.com",
         "password": "password123"
     }
-
 }

@@ -1,0 +1,53 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Messages{% endblock %}
+{% block breadcrumb %}Messages{% endblock %}
+{% block page_title %}Contact Messages{% endblock %}
+{% block page_breadcrumb %}Messages{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-envelope"></i> All Messages</h3>
+        <span class="badge badge-info">{{ contacts | length }} total</span>
+    </div>
+    <div class="card-body">
+        {% if contacts %}
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Subject</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in contacts %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <div class="user-cell">
+                                <img src="https://ui-avatars.com/api/?name={{ contact.name }}&background=f59e0b&color=fff&size=32&font-size=0.5&bold=true" alt="" class="user-avatar-sm">
+                                <span class="fw-bold">{{ contact.name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ contact.email }}</td>
+                        <td><span class="badge badge-warning">{{ contact.subject }}</span></td>
+                        <td class="message-cell">{{ contact.message[:80] }}{% if contact.message|length > 80 %}...{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No messages received yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

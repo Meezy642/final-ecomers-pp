@@ -1,0 +1,57 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Users{% endblock %}
+{% block breadcrumb %}Users{% endblock %}
+{% block page_title %}Users List{% endblock %}
+{% block page_breadcrumb %}Users{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="mb-3" style="margin-bottom: 1.5rem;">
+            <a href="{{ url_for('admin_add_user') }}" class="btn btn-primary" style="background-color: #007bff; border-color: #007bff; font-weight: 500; font-size: 0.95rem; padding: 8px 16px; border-radius: 6px;">
+                <i class="fas fa-plus-circle" style="margin-right: 4px;"></i> Add New User
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="admin-table" id="users-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th style="width: 200px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, info in users.items() %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ username }}</td>
+                        <td>{{ info.email }}</td>
+                        <td>{{ info.get('role', 'customer') }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('admin_edit_user', username=username) }}" class="btn btn-sm btn-info" style="background-color: #007bff; border-color: #007bff; font-weight: 500; border-radius: 4px; padding: 6px 12px; font-size: 0.85rem;" title="Edit">
+                                    <i class="far fa-edit" style="margin-right: 4px;"></i> Edit
+                                </a>
+                                <form action="{{ url_for('admin_delete_user', username=username) }}" method="POST" class="inline-form" onsubmit="return confirm('Are you sure you want to delete user: {{ username }}?')">
+                                    <button type="submit" class="btn btn-sm btn-danger" style="background-color: #dc3545; border-color: #dc3545; font-weight: 500; border-radius: 4px; padding: 6px 12px; font-size: 0.85rem;" title="Delete">
+                                        <i class="far fa-trash-alt" style="margin-right: 4px;"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No users found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

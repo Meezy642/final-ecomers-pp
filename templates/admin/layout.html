@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %} | YSTAA SHOPP</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-logo-circle">
+                <span>A</span>
+            </div>
+            <span class="sidebar-brand-text">admin YSTAA</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                    <a href="{{ url_for('admin_dashboard') }}" class="sidebar-menu-link">
+                        <i class="fas fa-home"></i>
+                        <span>dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if request.endpoint in ['admin_users', 'admin_add_user', 'admin_edit_user'] %}active{% endif %}">
+                    <a href="{{ url_for('admin_users') }}" class="sidebar-menu-link">
+                        <i class="far fa-user"></i>
+                        <span>User</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item has-submenu {% if request.endpoint in ['admin_products', 'admin_add_product', 'admin_edit_product', 'admin_categories'] %}active open{% endif %}">
+                    <a href="#" class="sidebar-menu-link submenu-toggle">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Product Management</span>
+                        <i class="fas fa-chevron-right submenu-arrow"></i>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li class="{% if request.endpoint == 'admin_products' %}active{% endif %}">
+                            <a href="{{ url_for('admin_products') }}">
+                                <i class="fas fa-circle dot-icon"></i>
+                                <span>All Products</span>
+                            </a>
+                        </li>
+                        <li class="{% if request.endpoint == 'admin_add_product' %}active{% endif %}">
+                            <a href="{{ url_for('admin_add_product') }}">
+                                <i class="fas fa-circle dot-icon"></i>
+                                <span>Add Product</span>
+                            </a>
+                        </li>
+                        <li class="{% if request.endpoint == 'admin_categories' %}active{% endif %}">
+                            <a href="{{ url_for('admin_categories') }}">
+                                <i class="fas fa-circle dot-icon"></i>
+                                <span>Categories</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="sidebar-menu-item {% if request.endpoint == 'admin_orders' %}active{% endif %}">
+                    <a href="{{ url_for('admin_orders') }}" class="sidebar-menu-link">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Orders</span>
+                        {% if order_count is defined and order_count > 0 %}
+                        <span class="sidebar-badge">{{ order_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="sidebar-menu-item {% if request.endpoint == 'admin_contacts' %}active{% endif %}">
+                    <a href="{{ url_for('admin_contacts') }}" class="sidebar-menu-link">
+                        <i class="fas fa-envelope"></i>
+                        <span>Messages</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ url_for('home') }}" class="sidebar-footer-link">
+                <i class="fas fa-store"></i>
+                <span>View Store</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper" id="main-wrapper">
+        <!-- Top Navbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="breadcrumb-nav">
+                    <span class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Home</a></span>
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-item active">{% block breadcrumb %}Dashboard{% endblock %}</span>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-icon" title="Fullscreen" id="fullscreen-btn">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                </div>
+                <div class="topbar-icon" title="Theme">
+                    <i class="far fa-sun"></i>
+                </div>
+                <div class="topbar-user-menu" id="user-menu-toggle">
+                    <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg" alt="Alexander Pierce" class="topbar-avatar">
+                    <span class="topbar-username">Alexander Pierce</span>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
+                        <a href="{{ url_for('home') }}"><i class="fas fa-store"></i> View Store</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('logout') }}" class="text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="content-area">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                <div class="page-breadcrumb">
+                    <a href="{{ url_for('admin_dashboard') }}">Home</a> / 
+                    <span>{% block page_breadcrumb %}Dashboard{% endblock %}</span>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">
+                        <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-triangle' }}"></i>
+                        <span>{{ message }}</span>
+                        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Main Content Block -->
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="footer-left">
+                <strong>&copy; 2026 <a href="{{ url_for('home') }}">YSTAA SHOPP</a>.</strong> All rights reserved.
+            </div>
+            <div class="footer-right">
+                <span>Version 1.0.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Admin JS -->
+    <script>
+        // Sidebar toggle
+        const sidebar = document.getElementById('sidebar');
+        const mainWrapper = document.getElementById('main-wrapper');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainWrapper.classList.toggle('expanded');
+        });
+
+        // Submenu toggle
+        document.querySelectorAll('.submenu-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const parent = toggle.closest('.has-submenu');
+                parent.classList.toggle('open');
+            });
+        });
+
+        // User dropdown
+        const userMenuToggle = document.getElementById('user-menu-toggle');
+        const userDropdown = document.getElementById('user-dropdown');
+
+        userMenuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', () => {
+            userDropdown.classList.remove('show');
+        });
+
+        // Fullscreen
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Auto-dismiss alerts
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        });
+
+        // Responsive sidebar
+        if (window.innerWidth < 992) {
+            sidebar.classList.add('collapsed');
+            mainWrapper.classList.add('expanded');
+        }
+
+        // Close sidebar on mobile when clicking outside
+        mainWrapper.addEventListener('click', () => {
+            if (window.innerWidth < 992 && !sidebar.classList.contains('collapsed')) {
+                sidebar.classList.add('collapsed');
+                mainWrapper.classList.add('expanded');
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

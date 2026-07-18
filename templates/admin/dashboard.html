@@ -1,0 +1,169 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="stats-row">
+    <div class="stat-card stat-card-primary">
+        <div class="stat-card-body">
+            <div class="stat-card-info">
+                <span class="stat-card-value">{{ total_users }}</span>
+                <span class="stat-card-label">Total Users</span>
+            </div>
+            <div class="stat-card-icon">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <a href="{{ url_for('admin_users') }}" class="stat-card-footer">
+            More info <i class="fas fa-arrow-circle-right"></i>
+        </a>
+    </div>
+    <div class="stat-card stat-card-success">
+        <div class="stat-card-body">
+            <div class="stat-card-info">
+                <span class="stat-card-value">{{ total_products }}</span>
+                <span class="stat-card-label">Total Products</span>
+            </div>
+            <div class="stat-card-icon">
+                <i class="fas fa-box-open"></i>
+            </div>
+        </div>
+        <a href="{{ url_for('admin_products') }}" class="stat-card-footer">
+            More info <i class="fas fa-arrow-circle-right"></i>
+        </a>
+    </div>
+    <div class="stat-card stat-card-warning">
+        <div class="stat-card-body">
+            <div class="stat-card-info">
+                <span class="stat-card-value">{{ total_orders }}</span>
+                <span class="stat-card-label">Total Orders</span>
+            </div>
+            <div class="stat-card-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+        </div>
+        <a href="{{ url_for('admin_orders') }}" class="stat-card-footer">
+            More info <i class="fas fa-arrow-circle-right"></i>
+        </a>
+    </div>
+    <div class="stat-card stat-card-danger">
+        <div class="stat-card-body">
+            <div class="stat-card-info">
+                <span class="stat-card-value">${{ "%.2f"|format(total_revenue) }}</span>
+                <span class="stat-card-label">Total Revenue</span>
+            </div>
+            <div class="stat-card-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+        </div>
+        <a href="{{ url_for('admin_orders') }}" class="stat-card-footer">
+            More info <i class="fas fa-arrow-circle-right"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Recent Orders & Quick Stats Row -->
+<div class="content-row">
+    <!-- Recent Orders -->
+    <div class="card card-lg">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-shopping-bag"></i> Recent Orders</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td><span class="badge badge-info">{{ order.order_id }}</span></td>
+                            <td>{{ order.buyer_name }}</td>
+                            <td class="text-success fw-bold">${{ "%.2f"|format(order.total_price) }}</td>
+                            <td>{{ order.payment_method | default('N/A') }}</td>
+                            <td>{{ order.timestamp }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No orders yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Info Cards -->
+    <div class="card card-sm">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-chart-pie"></i> Product Categories</h3>
+        </div>
+        <div class="card-body">
+            {% for category, count in categories.items() %}
+            <div class="category-item">
+                <div class="category-info">
+                    <span class="category-name">{{ category | title }}</span>
+                    <span class="category-count">{{ count }} items</span>
+                </div>
+                <div class="category-bar">
+                    <div class="category-bar-fill" style="width: {{ (count / total_products * 100) if total_products > 0 else 0 }}%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Latest Users -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-user-plus"></i> Registered Users</h3>
+        <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-primary">View All</a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, info in users.items() %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <div class="user-cell">
+                                <img src="https://ui-avatars.com/api/?name={{ username }}&background=6366f1&color=fff&size=32&font-size=0.5&bold=true" alt="" class="user-avatar-sm">
+                                <span>{{ username }}</span>
+                            </div>
+                        </td>
+                        <td>{{ info.email }}</td>
+                        <td><span class="badge badge-{{ 'danger' if info.get('role') == 'admin' else 'secondary' }}">{{ info.get('role', 'customer') }}</span></td>
+                        <td>
+                            <a href="{{ url_for('admin_edit_user', username=username) }}" class="btn btn-xs btn-info"><i class="fas fa-edit"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
