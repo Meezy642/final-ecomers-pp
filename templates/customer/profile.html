@@ -190,17 +190,17 @@
             {% if logged_in_user_role == 'admin' %}
             <!-- Admin View: Privacy & Security Settings -->
             <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
-                <h3 class="font-heading text-2xl font-extrabold text-white flex items-center gap-2">
-                    <i class="fas fa-user-shield text-purple-400"></i> Privacy & Security
-                </h3>
-                <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-4">
                     <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary" style="background-color: #6c757d; border-color: #6c757d; color: #ffffff; font-weight: 500; font-size: 0.85rem; padding: 7px 14px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; transition: background-color 0.2s;">
                         <i class="fas fa-arrow-left"></i> Back to Dashboard
                     </a>
-                    <span class="text-xs font-bold bg-indigo-950/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-900/30">
-                        Admin Account
-                    </span>
+                    <h3 class="font-heading text-2xl font-extrabold text-white flex items-center gap-2">
+                        <i class="fas fa-user-shield text-purple-400"></i> Privacy & Security
+                    </h3>
                 </div>
+                <span class="text-xs font-bold bg-indigo-950/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-900/30">
+                    Admin Account
+                </span>
             </div>
 
             <!-- Profile Settings Card -->
