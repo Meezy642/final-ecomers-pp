@@ -1001,6 +1001,20 @@ def upload_avatar():
         
     return jsonify({"success": False, "message": "User not found"}), 404
 
+@app.route('/api/delete_avatar', methods=['POST'])
+def delete_avatar():
+    if 'username' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+        
+    username = session['username']
+    users = load_users()
+    if username in users:
+        users[username]['profile_pic'] = ""
+        save_users(users)
+        return jsonify({"success": True, "message": "Profile picture removed successfully!"})
+        
+    return jsonify({"success": False, "message": "User not found"}), 404
+
 @app.route('/change_password', methods=['POST'])
 def change_password():
     if 'username' not in session:

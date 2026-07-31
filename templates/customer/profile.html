@@ -104,6 +104,12 @@
                         <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="handleAvatarFile(this)">
                     </div>
                     
+                    <div id="remove-avatar-btn-container" class="{% if not profile_pic %}hidden{% endif %}" style="margin-top: 0.5rem;">
+                        <button type="button" onclick="deleteAvatar()" class="text-[11px] text-red-500 hover:text-red-700 hover:underline focus:outline-none cursor-pointer">
+                            <i class="fas fa-trash-alt mr-1"></i> Remove Photo
+                        </button>
+                    </div>
+                    
                     <div class="space-y-1">
                         <h3 class="text-xl font-extrabold text-zinc-800 tracking-tight">{{ name if name else username }}</h3>
                         <p class="text-xs text-zinc-500 break-all">{{ email }}</p>
@@ -216,6 +222,12 @@
                             Change
                         </div>
                         <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="handleAvatarFile(this)">
+                    </div>
+                    
+                    <div id="remove-avatar-btn-container-cust" class="{% if not profile_pic %}hidden{% endif %}" style="margin-top: 0.5rem;">
+                        <button type="button" onclick="deleteAvatar()" class="text-[11px] text-rose-400 hover:text-rose-350 hover:underline focus:outline-none cursor-pointer">
+                            <i class="fas fa-trash-alt mr-1"></i> Remove Photo
+                        </button>
                     </div>
                     
                     <div class="space-y-1">
@@ -479,6 +491,13 @@
                         adminTopbarAvatar.src = base64Data;
                     }
 
+                    // Dynamically show the remove button
+                    const adminBtn = document.getElementById('remove-avatar-btn-container');
+                    if (adminBtn) adminBtn.classList.remove('hidden');
+                    
+                    const custBtn = document.getElementById('remove-avatar-btn-container-cust');
+                    if (custBtn) custBtn.classList.remove('hidden');
+
                     notify('Profile picture updated successfully!', 'success');
                 } else {
                     notify(data.message || 'Failed to update profile picture', 'error');
@@ -491,6 +510,65 @@
             });
         };
         reader.readAsDataURL(file);
+    }
+
+    function deleteAvatar() {
+        if (!confirm("Are you sure you want to remove your profile picture?")) return;
+        
+        fetch('/api/delete_avatar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Revert avatar displays to initials fallback
+                const containers = document.querySelectorAll('#avatar-container');
+                containers.forEach(container => {
+                    const initials = "{{ username[:2] | upper }}";
+                    if (container.classList.contains('rounded-full')) {
+                        // Admin layout circle
+                        container.innerHTML = `<span id="avatar-initials" class="text-zinc-600 font-extrabold">${initials}</span>`;
+                    } else {
+                        // Customer layout card
+                        container.innerHTML = `<span id="avatar-initials">${initials}</span>`;
+                    }
+                });
+                
+                // Hide both remove buttons
+                const adminBtn = document.getElementById('remove-avatar-btn-container');
+                if (adminBtn) adminBtn.classList.add('hidden');
+                
+                const custBtn = document.getElementById('remove-avatar-btn-container-cust');
+                if (custBtn) custBtn.classList.add('hidden');
+                
+                // Reset top navigation menu avatars to initials fallback
+                const headerAvatars = document.querySelectorAll('.user-avatar-circle img');
+                headerAvatars.forEach(hImg => {
+                    hImg.remove();
+                });
+                const headerAvatarCircles = document.querySelectorAll('.user-avatar-circle');
+                headerAvatarCircles.forEach(circle => {
+                    circle.innerText = "{{ username[:2] | upper }}";
+                });
+                
+                // Reset admin panel top navbar avatar image
+                const adminTopbarAvatar = document.querySelector('.topbar-avatar');
+                if (adminTopbarAvatar) {
+                    adminTopbarAvatar.src = "https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg";
+                }
+                
+                notify('Profile picture removed successfully!', 'success');
+            } else {
+                notify(data.message || 'Failed to remove profile picture', 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Avatar delete error:', err);
+            notify('Failed to connect to server', 'error');
+        });
     }
 </script>
 {% endblock %}
