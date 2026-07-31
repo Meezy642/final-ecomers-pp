@@ -81,8 +81,12 @@
             <div class="hidden sm:block">
                 {% if logged_in_user %}
                 <a href="{{ url_for('profile') }}" class="flex items-center gap-2.5 focus:outline-none group" id="user-menu-button" title="View Profile & Purchase History">
-                    <div class="user-avatar-circle group-hover:scale-105 transition-transform duration-200">
+                    <div class="user-avatar-circle group-hover:scale-105 transition-transform duration-200 overflow-hidden flex items-center justify-center">
+                        {% if logged_in_user_pic %}
+                        <img src="{{ logged_in_user_pic }}" alt="Avatar" class="w-full h-full object-cover">
+                        {% else %}
                         {{ logged_in_user[:2] | upper }}
+                        {% endif %}
                     </div>
                     <span class="hidden lg:inline text-sm font-semibold text-slate-300 group-hover:text-purple-400 transition-colors">{{ logged_in_user }}</span>
                     <i class="fas fa-chevron-down text-[9px] text-slate-500 hidden lg:inline group-hover:text-purple-400 transition-colors"></i>

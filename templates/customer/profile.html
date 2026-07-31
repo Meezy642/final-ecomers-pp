@@ -11,9 +11,21 @@
                 <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
                 
                 <div class="relative space-y-6">
-                    <!-- Large User Initials Avatar -->
-                    <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-black mx-auto shadow-xl shadow-purple-900/30 border-2 border-zinc-800">
-                        {{ username[:2] | upper }}
+                    <!-- Profile Picture Upload / Avatar -->
+                    <div class="relative w-24 h-24 mx-auto group">
+                        <div id="avatar-container" class="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-650 flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-purple-900/30 border-2 border-zinc-800 overflow-hidden cursor-pointer">
+                            {% if profile_pic %}
+                            <img src="{{ profile_pic }}" alt="Avatar" class="w-full h-full object-cover" id="avatar-image">
+                            {% else %}
+                            <span id="avatar-initials">{{ username[:2] | upper }}</span>
+                            {% endif %}
+                        </div>
+                        <!-- Upload Overlay -->
+                        <div onclick="triggerAvatarUpload()" class="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-[10px] text-white font-bold cursor-pointer border-2 border-purple-500">
+                            <i class="fas fa-camera text-lg mb-1"></i>
+                            Change
+                        </div>
+                        <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="handleAvatarFile(this)">
                     </div>
                     
                     <div class="space-y-1">
@@ -21,7 +33,8 @@
                         <p class="text-xs text-slate-400 break-all">{{ email }}</p>
                     </div>
                     
-                    <!-- Account Info Matrix -->
+                    {% if logged_in_user_role != 'admin' %}
+                    <!-- Account Info Matrix (Only for Customers, Hidden for Admins) -->
                     <div class="border-t border-zinc-800/60 pt-4 text-left space-y-3">
                         <div class="flex justify-between items-center text-xs">
                             <span class="text-slate-400 font-semibold">Account Status</span>
@@ -36,6 +49,7 @@
                             <span class="font-bold text-slate-300">June 2026</span>
                         </div>
                     </div>
+                    {% endif %}
                     
                     <!-- Destructive Log Out Button -->
                     <div class="border-t border-zinc-800/60 pt-4">
@@ -46,7 +60,8 @@
                 </div>
             </div>
 
-            <!-- Change Password Card -->
+            {% if logged_in_user_role != 'admin' %}
+            <!-- Change Password Card (Shown on Left for Customers, Moved to Main for Admins) -->
             <div class="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/80 shadow-2xl relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
                 <div class="relative space-y-4">
@@ -84,10 +99,79 @@
                     </form>
                 </div>
             </div>
+            {% endif %}
         </div>
         
-        <!-- Right Column: Purchase History (8 cols equivalent) -->
+        <!-- Right Column: Main Content (Purchase History for Customers, Privacy & Security for Admins) -->
         <div class="flex-grow w-full space-y-6">
+            {% if logged_in_user_role == 'admin' %}
+            <!-- Admin View: Privacy & Security Settings -->
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <h3 class="font-heading text-2xl font-extrabold text-white flex items-center gap-2">
+                    <i class="fas fa-user-shield text-purple-400"></i> Privacy & Security
+                </h3>
+                <span class="text-xs font-bold bg-indigo-950/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-900/30">
+                    Admin Account
+                </span>
+            </div>
+
+            <div class="bg-zinc-900/40 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl p-8 relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
+                <div class="max-w-xl space-y-6">
+                    <div>
+                        <h4 class="text-lg font-bold text-white font-heading">Change Password</h4>
+                        <p class="text-xs text-slate-400 mt-1">Keep your credentials secure by changing your password periodically.</p>
+                    </div>
+
+                    <form action="{{ url_for('change_password') }}" method="POST" class="auth-form space-y-4">
+                        <div class="form-group-field text-left">
+                            <label for="current_password" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Current Password</label>
+                            <div class="input-icon-wrapper mt-2">
+                                <i class="fas fa-key input-icon text-slate-500"></i>
+                                <input type="password" id="current_password" name="current_password" placeholder="Enter current password" required class="text-sm py-2">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group-field text-left">
+                                <label for="new_password" class="text-xs font-bold text-slate-400 uppercase tracking-wider">New Password</label>
+                                <div class="input-icon-wrapper mt-2">
+                                    <i class="fas fa-lock input-icon text-slate-500"></i>
+                                    <input type="password" id="new_password" name="new_password" placeholder="••••••••" required class="text-sm py-2">
+                                </div>
+                            </div>
+                            <div class="form-group-field text-left">
+                                <label for="confirm_password" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Confirm New Password</label>
+                                <div class="input-icon-wrapper mt-2">
+                                    <i class="fas fa-shield-alt input-icon text-slate-500"></i>
+                                    <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required class="text-sm py-2">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" class="btn-auth-action px-6 py-3.5 text-white text-sm font-bold cursor-pointer transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-purple-500/20 inline-flex items-center gap-2 rounded-xl">
+                                Save New Password <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Additional Privacy info block -->
+            <div class="bg-zinc-900/20 border border-zinc-800/80 rounded-3xl p-6 flex items-start gap-4 shadow-xl">
+                <div class="w-10 h-10 rounded-xl bg-purple-950/30 border border-purple-800/40 text-purple-400 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-info-circle text-lg"></i>
+                </div>
+                <div class="space-y-1">
+                    <h5 class="text-white font-bold text-sm">Security Tip</h5>
+                    <p class="text-slate-450 text-xs leading-relaxed">As an admin, your account has wide system privileges. Make sure to use a unique, strong password. Logging out when using shared devices is highly recommended.</p>
+                </div>
+            </div>
+            
+            {% else %}
+            
+            <!-- Customer View: Purchase History -->
             <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
                 <h3 class="font-heading text-2xl font-extrabold text-white flex items-center gap-2">
                     <i class="fas fa-history text-purple-400"></i> Purchase History
@@ -181,7 +265,7 @@
                                 {% if order.order_notes and order.order_notes != 'N/A' %}
                                 <div class="flex justify-between">
                                     <span class="text-slate-500">Driver Notes:</span>
-                                    <span class="text-slate-400 italic">"{{ order.order_notes }}"</span>
+                                    <span class="text-slate-300 font-bold italic">"{{ order.order_notes }}"</span>
                                 </div>
                                 {% endif %}
                             </div>
@@ -192,8 +276,86 @@
                 {% endfor %}
             </div>
             {% endif %}
+            {% endif %}
         </div>
         
     </div>
 </div>
+
+<!-- AJAX File Upload Logic -->
+<script>
+    function triggerAvatarUpload() {
+        document.getElementById('avatar-input').click();
+    }
+
+    function handleAvatarFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        // Size check: limit to 2MB to keep base64 strings reasonable
+        if (file.size > 2 * 1024 * 1024) {
+            showToast('Image size must be less than 2MB', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            
+            // Show loading state in container
+            const container = document.getElementById('avatar-container');
+            container.style.opacity = '0.5';
+
+            // Send base64 to API
+            fetch('/api/upload_avatar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: base64Data })
+            })
+            .then(res => res.json())
+            .then(data => {
+                container.style.opacity = '1';
+                if (data.success) {
+                    // Update main avatar display
+                    let img = document.getElementById('avatar-image');
+                    if (!img) {
+                        img = document.createElement('img');
+                        img.id = 'avatar-image';
+                        img.className = 'w-full h-full object-cover';
+                        img.alt = 'Avatar';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    }
+                    img.src = base64Data;
+                    
+                    // Update header avatar display if it exists
+                    const headerAvatars = document.querySelectorAll('.user-avatar-circle img');
+                    headerAvatars.forEach(hImg => {
+                        hImg.src = base64Data;
+                    });
+                    
+                    // Update header if fallback initials were shown
+                    const headerAvatarCircles = document.querySelectorAll('.user-avatar-circle');
+                    headerAvatarCircles.forEach(circle => {
+                        if (!circle.querySelector('img')) {
+                            circle.innerHTML = `<img src="${base64Data}" alt="Avatar" class="w-full h-full object-cover">`;
+                        }
+                    });
+
+                    showToast('Profile picture updated successfully!', 'success');
+                } else {
+                    showToast(data.message || 'Failed to update profile picture', 'error');
+                }
+            })
+            .catch(err => {
+                container.style.opacity = '1';
+                console.error('Avatar upload error:', err);
+                showToast('Failed to connect to server', 'error');
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
 {% endblock %}
