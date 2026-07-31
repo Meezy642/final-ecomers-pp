@@ -486,9 +486,21 @@
                         }
                     });
 
-                    const adminTopbarAvatar = document.querySelector('.topbar-avatar');
-                    if (adminTopbarAvatar) {
-                        adminTopbarAvatar.src = base64Data;
+                    // Update admin panel top navbar avatar image/initials
+                    const userMenu = document.getElementById('user-menu-toggle');
+                    if (userMenu) {
+                        const topbarInitials = userMenu.querySelector('.topbar-avatar-initials');
+                        if (topbarInitials) {
+                            topbarInitials.remove();
+                        }
+                        let topbarAvatar = userMenu.querySelector('.topbar-avatar');
+                        if (!topbarAvatar) {
+                            topbarAvatar = document.createElement('img');
+                            topbarAvatar.className = 'topbar-avatar';
+                            topbarAvatar.alt = 'Avatar';
+                            userMenu.insertBefore(topbarAvatar, userMenu.firstChild);
+                        }
+                        topbarAvatar.src = base64Data;
                     }
 
                     // Dynamically show the remove button
@@ -554,10 +566,20 @@
                     circle.innerText = "{{ username[:2] | upper }}";
                 });
                 
-                // Reset admin panel top navbar avatar image
-                const adminTopbarAvatar = document.querySelector('.topbar-avatar');
-                if (adminTopbarAvatar) {
-                    adminTopbarAvatar.src = "https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg";
+                // Reset admin panel top navbar avatar to initials fallback
+                const userMenu = document.getElementById('user-menu-toggle');
+                if (userMenu) {
+                    const topbarAvatar = userMenu.querySelector('.topbar-avatar');
+                    if (topbarAvatar) {
+                        topbarAvatar.remove();
+                    }
+                    const topbarInitials = userMenu.querySelector('.topbar-avatar-initials');
+                    if (!topbarInitials) {
+                        const initialsDiv = document.createElement('div');
+                        initialsDiv.className = 'topbar-avatar-initials';
+                        initialsDiv.innerText = "{{ username[:2] | upper }}";
+                        userMenu.insertBefore(initialsDiv, userMenu.firstChild);
+                    }
                 }
                 
                 notify('Profile picture removed successfully!', 'success');

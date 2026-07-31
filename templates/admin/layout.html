@@ -113,7 +113,13 @@
                     <i class="far fa-sun"></i>
                 </div>
                 <div class="topbar-user-menu" id="user-menu-toggle">
-                    <img src="{{ logged_in_user_pic if logged_in_user_pic else 'https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg' }}" alt="{{ logged_in_user_display_name if logged_in_user_display_name else 'Alexander Pierce' }}" class="topbar-avatar">
+                    {% if logged_in_user_pic %}
+                    <img src="{{ logged_in_user_pic }}" alt="Avatar" class="topbar-avatar">
+                    {% else %}
+                    <div class="topbar-avatar-initials">
+                        {{ (logged_in_user_display_name if logged_in_user_display_name else logged_in_user)[:2] | upper }}
+                    </div>
+                    {% endif %}
                     <span class="topbar-username">{{ logged_in_user_display_name if logged_in_user_display_name else 'Alexander Pierce' }}</span>
                     <div class="user-dropdown" id="user-dropdown">
                         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>

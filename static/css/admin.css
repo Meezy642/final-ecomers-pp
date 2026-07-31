@@ -399,6 +399,21 @@ a:hover {
     border: 2px solid var(--primary);
 }
 
+.topbar-avatar-initials {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    background-color: var(--primary);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
 .topbar-username {
     font-size: 0.85rem;
     font-weight: 600;
