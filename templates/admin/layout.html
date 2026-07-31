@@ -135,12 +135,29 @@
         <div class="content-area">
             <!-- Page Header -->
             <div class="page-header">
-                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                <div class="page-title-container">
+                    <a href="javascript:history.back()" class="btn-page-back" id="global-back-btn" title="Go Back">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
                 <div class="page-breadcrumb">
                     <a href="{{ url_for('admin_dashboard') }}">Home</a> / 
                     <span>{% block page_breadcrumb %}Dashboard{% endblock %}</span>
                 </div>
             </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const titleText = document.querySelector('.page-title');
+                    const backBtn = document.getElementById('global-back-btn');
+                    if (titleText && backBtn) {
+                        if (titleText.innerText.trim().toLowerCase() === 'dashboard') {
+                            backBtn.style.display = 'none';
+                        }
+                    }
+                });
+            </script>
 
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}

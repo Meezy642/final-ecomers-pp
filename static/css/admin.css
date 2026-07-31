@@ -1312,3 +1312,36 @@ textarea.form-control {
         flex-direction: column;
     }
 }
+
+/* Global Back Button Styling */
+.page-title-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-page-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    color: #495057;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    cursor: pointer;
+}
+
+.btn-page-back:hover {
+    background: #f8f9fa;
+    color: #007bff;
+    border-color: #adb5bd;
+    transform: translateX(-3px);
+}
+
+.btn-page-back i {
+    font-size: 0.85rem;
+}
