@@ -1,6 +1,26 @@
-{% extends "customer/layout.html" %}
+{% extends layout_template | default('customer/layout.html') %}
+
+{% block title %}Profile{% endblock %}
+{% block breadcrumb %}Profile{% endblock %}
+{% block page_title %}Profile{% endblock %}
+{% block page_breadcrumb %}Profile{% endblock %}
 
 {% block content %}
+{% if layout_template == 'admin/layout.html' %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    heading: ['Outfit', 'sans-serif'],
+                }
+            }
+        }
+    }
+</script>
+{% endif %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="flex flex-col lg:flex-row gap-8 items-start">
         

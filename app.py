@@ -924,6 +924,13 @@ def profile():
     user_data = users.get(username, {})
     email = user_data.get('email', 'N/A')
     profile_pic = user_data.get('profile_pic', '')
+    role = user_data.get('role', 'customer')
+    
+    # Select layout template dynamically
+    if role == 'admin':
+        layout_template = 'admin/layout.html'
+    else:
+        layout_template = 'customer/layout.html'
     
     # Load orders
     user_orders = load_orders(username)
@@ -936,7 +943,8 @@ def profile():
         username=username, 
         email=email, 
         orders=user_orders,
-        profile_pic=profile_pic
+        profile_pic=profile_pic,
+        layout_template=layout_template
     )
 
 @app.route('/api/upload_avatar', methods=['POST'])
