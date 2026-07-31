@@ -222,7 +222,9 @@ def load_users():
                 users[doc["_id"]] = {
                     "email": doc["email"],
                     "password": doc["password"],
-                    "role": doc.get("role", "customer")
+                    "role": doc.get("role", "customer"),
+                    "name": doc.get("name", ""),
+                    "profile_pic": doc.get("profile_pic", "")
                 }
             
             # Safeguard: Auto-provision admin user if missing in MongoDB
@@ -266,7 +268,9 @@ def save_users(users):
                     {"$set": {
                         "email": data["email"],
                         "password": data["password"],
-                        "role": data.get("role", "customer")
+                        "role": data.get("role", "customer"),
+                        "name": data.get("name", ""),
+                        "profile_pic": data.get("profile_pic", "")
                     }},
                     upsert=True
                 )
