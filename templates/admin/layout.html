@@ -113,7 +113,7 @@
                     <i class="far fa-sun"></i>
                 </div>
                 <div class="topbar-user-menu" id="user-menu-toggle">
-                    <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg" alt="Alexander Pierce" class="topbar-avatar">
+                    <img src="{{ logged_in_user_pic if logged_in_user_pic else 'https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg' }}" alt="Alexander Pierce" class="topbar-avatar">
                     <span class="topbar-username">Alexander Pierce</span>
                     <div class="user-dropdown" id="user-dropdown">
                         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
