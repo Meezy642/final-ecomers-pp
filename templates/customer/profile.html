@@ -112,7 +112,7 @@
                     </div>
                     
                     <div class="space-y-1">
-                        <h2 class="text-xl font-extrabold text-white font-heading tracking-tight">{{ username }}</h2>
+                        <h2 class="text-xl font-extrabold text-white font-heading tracking-tight">{{ name if name else username }}</h2>
                         <p class="text-xs text-slate-400 break-all">{{ email }}</p>
                     </div>
                     
@@ -198,6 +198,43 @@
                 </span>
             </div>
 
+            <!-- Profile Settings Card -->
+            <div class="bg-zinc-900/40 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl p-8 relative animate-fadeIn">
+                <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
+                <div class="max-w-xl space-y-6">
+                    <div>
+                        <h4 class="text-lg font-bold text-white font-heading">Account Settings</h4>
+                        <p class="text-xs text-slate-400 mt-1">Update your display name and email address.</p>
+                    </div>
+
+                    <form action="{{ url_for('change_profile') }}" method="POST" class="auth-form space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group-field text-left">
+                                <label for="name" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Display Name</label>
+                                <div class="input-icon-wrapper mt-2">
+                                    <i class="fas fa-user input-icon text-slate-500"></i>
+                                    <input type="text" id="name" name="name" placeholder="Enter display name" value="{{ name if name else '' }}" class="text-sm py-2">
+                                </div>
+                            </div>
+                            <div class="form-group-field text-left">
+                                <label for="email" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+                                <div class="input-icon-wrapper mt-2">
+                                    <i class="fas fa-envelope input-icon text-slate-500"></i>
+                                    <input type="email" id="email" name="email" placeholder="Enter email address" value="{{ email }}" required class="text-sm py-2">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" class="btn-auth-action px-6 py-3.5 text-white text-sm font-bold cursor-pointer transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-purple-500/20 inline-flex items-center gap-2 rounded-xl">
+                                Save Profile Changes <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password Card -->
             <div class="bg-zinc-900/40 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl p-8 relative">
                 <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
                 <div class="max-w-xl space-y-6">

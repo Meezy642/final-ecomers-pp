@@ -369,15 +369,17 @@ def inject_global_template_vars():
     wishlist = json.loads(wishlist_cookie) if wishlist_cookie else []
     wishlist_count = len(wishlist)
 
-    # 3. Logged-in User, Role & Profile Pic
+    # 3. Logged-in User, Role, Profile Pic & Display Name
     logged_in_user = session.get('username')
     logged_in_user_role = None
     logged_in_user_pic = None
+    logged_in_user_display_name = None
     if logged_in_user:
         users = load_users()
         user_data = users.get(logged_in_user, {})
         logged_in_user_role = user_data.get('role')
         logged_in_user_pic = user_data.get('profile_pic')
+        logged_in_user_display_name = user_data.get('name', logged_in_user)
 
     return dict(
         cart_count=cart_count,
@@ -385,7 +387,8 @@ def inject_global_template_vars():
         wishlist=wishlist,
         logged_in_user=logged_in_user,
         logged_in_user_role=logged_in_user_role,
-        logged_in_user_pic=logged_in_user_pic
+        logged_in_user_pic=logged_in_user_pic,
+        logged_in_user_display_name=logged_in_user_display_name
     )
 
 # --- ROUTES ---
@@ -925,6 +928,7 @@ def profile():
     email = user_data.get('email', 'N/A')
     profile_pic = user_data.get('profile_pic', '')
     role = user_data.get('role', 'customer')
+    name = user_data.get('name', username)
     
     # Select layout template dynamically
     if role == 'admin':
@@ -942,10 +946,36 @@ def profile():
         'customer/profile.html', 
         username=username, 
         email=email, 
+        name=name,
         orders=user_orders,
         profile_pic=profile_pic,
         layout_template=layout_template
     )
+
+@app.route('/change_profile', methods=['POST'])
+def change_profile():
+    if 'username' not in session:
+        flash("Please log in first.", "error")
+        return redirect(url_for('login'))
+        
+    username = session['username']
+    name = request.form.get('name', '').strip()
+    email = request.form.get('email', '').strip()
+    
+    if not email:
+        flash("Email is required.", "error")
+        return redirect(url_for('profile'))
+        
+    users = load_users()
+    if username in users:
+        users[username]['name'] = name
+        users[username]['email'] = email
+        save_users(users)
+        flash("Profile updated successfully.", "success")
+    else:
+        flash("User not found.", "error")
+        
+    return redirect(url_for('profile'))
 
 @app.route('/api/upload_avatar', methods=['POST'])
 def upload_avatar():
