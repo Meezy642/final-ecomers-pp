@@ -438,18 +438,18 @@ a:hover {
     align-items: center;
     gap: 10px;
     padding: 10px 16px;
-    color: var(--text-secondary);
+    color: var(--text-sidebar);
     font-size: 0.85rem;
     transition: var(--transition);
 }
 
 .user-dropdown a:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
 }
 
 .user-dropdown a.text-danger {
-    color: var(--danger);
+    color: #f87171; /* Brighter red for logout on dark bg */
 }
 
 .dropdown-divider {
