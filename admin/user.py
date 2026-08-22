@@ -8,7 +8,6 @@ from extensions import db
 from models.user import User
 
 from . import admin_bp
-user_bp = admin_bp
 
 # </admin/user>
 @admin_bp.route("/user")
@@ -21,7 +20,6 @@ def user_index():
 
 # </admin/user/create>
 @admin_bp.route("/user/create", methods=["GET", "POST"])
-@admin_bp.route("/users/add", methods=["GET", "POST"])
 def user_create():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -80,7 +78,6 @@ def user_create():
 
 # </admin/user/edit/<id>>
 @admin_bp.route("/user/edit/<int:id>", methods=["GET", "POST"])
-@admin_bp.route("/users/edit/<int:id>", methods=["GET", "POST"])
 def user_edit(id):
     user = User.query.get(id)
     if not user:
@@ -143,7 +140,6 @@ def user_edit(id):
 
 # </admin/user/delete/<id>>
 @admin_bp.route("/user/delete/<int:id>", methods=["GET", "POST"])
-@admin_bp.route("/users/delete/<int:id>", methods=["GET", "POST"])
 def user_delete(id):
     user = User.query.get(id)
     if not user:
@@ -159,13 +155,3 @@ def user_delete(id):
 
     flash("User deleted successfully!", "success")
     return redirect(url_for("admin.user_index"))
-
-# User Details
-@admin_bp.route('/users/<int:id>')
-@admin_bp.route('/user/<int:id>')
-def user_details(id):
-    user = User.query.get(id)
-    if not user:
-        flash('User not found.', 'danger')
-        return redirect(url_for('admin.user_index'))
-    return render_template('admin/user_detail.html', user=user)

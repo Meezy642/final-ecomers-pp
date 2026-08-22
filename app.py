@@ -10,7 +10,7 @@ load_dotenv()
 from models import db, User, Product, Order, Contact
 from upload_config import init_upload_config
 from customer import customer_bp
-from admin import admin_bp, dashboard_bp, product_bp, category_bp, user_bp
+from admin import admin_bp, dashboard_bp, product_bp, category_bp
 from items import items
 
 app = Flask(__name__)
