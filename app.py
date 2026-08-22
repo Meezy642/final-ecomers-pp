@@ -33,26 +33,79 @@ app.register_blueprint(category_bp)
 app.register_blueprint(user_bp)
 
 # --- SMART URL_FOR RESOLVER FOR COMPATIBILITY ---
+ENDPOINT_ALIASES = {
+    'admin_dashboard': 'admin_dashboard.admin_dashboard',
+    'admin_orders': 'admin_dashboard.admin_orders',
+    'admin_contacts': 'admin_dashboard.admin_contacts',
+    'admin_users': 'admin_user.admin_users',
+    'admin_add_user': 'admin_user.admin_add_user',
+    'admin_edit_user': 'admin_user.admin_edit_user',
+    'admin_delete_user': 'admin_user.admin_delete_user',
+    'admin_products': 'admin_product.admin_products',
+    'admin_add_product': 'admin_product.admin_add_product',
+    'admin_edit_product': 'admin_product.admin_edit_product',
+    'admin_delete_product': 'admin_product.admin_delete_product',
+    'admin_categories': 'admin_category.admin_categories',
+    'home': 'customer.home',
+    'products': 'customer.products',
+    'contact': 'customer.contact',
+    'about': 'customer.about',
+    'login': 'customer.login',
+    'register': 'customer.register',
+    'logout': 'customer.logout',
+    'favorites': 'customer.favorites',
+    'add_to_wishlist': 'customer.add_to_wishlist',
+    'remove_from_wishlist': 'customer.remove_from_wishlist',
+    'view_product': 'customer.view_product',
+    'add_to_cart': 'customer.add_to_cart',
+    'cart': 'customer.cart',
+    'increase_cart': 'customer.increase_cart',
+    'decrease_cart': 'customer.decrease_cart',
+    'remove_from_cart': 'customer.remove_from_cart',
+    'clear_cart': 'customer.clear_cart',
+    'checkout': 'customer.checkout',
+    'place_order': 'customer.place_order',
+    'order_success': 'customer.order_success',
+    'profile': 'customer.profile',
+    'change_profile': 'customer.change_profile',
+    'change_password': 'customer.change_password',
+    'forgot_password': 'customer.forgot_password',
+    'reset_password': 'customer.reset_password',
+}
+
 @app.context_processor
 def utility_processor():
     orig_url_for = url_for
     def custom_url_for(endpoint, **values):
+        # 1. Check alias dictionary first
+        target = ENDPOINT_ALIASES.get(endpoint, endpoint)
+        try:
+            return orig_url_for(target, **values)
+        except Exception:
+            pass
+
+        # 2. Try direct endpoint
         try:
             return orig_url_for(endpoint, **values)
         except Exception:
-            # Fallbacks for blueprint prefixes
-            for prefix in ['customer.', 'admin_dashboard.', 'admin_user.', 'admin_product.', 'admin_category.']:
-                try:
-                    return orig_url_for(prefix + endpoint, **values)
-                except Exception:
-                    pass
-            if '.' in endpoint:
-                base = endpoint.split('.', 1)[1]
-                try:
-                    return orig_url_for(base, **values)
-                except Exception:
-                    pass
-            return orig_url_for(endpoint, **values)
+            pass
+
+        # 3. Try blueprint prefixes
+        for prefix in ['customer.', 'admin_dashboard.', 'admin_user.', 'admin_product.', 'admin_category.']:
+            try:
+                return orig_url_for(prefix + endpoint, **values)
+            except Exception:
+                pass
+                
+        # 4. Try stripping blueprint prefix
+        if '.' in endpoint:
+            base = endpoint.split('.', 1)[1]
+            try:
+                return orig_url_for(base, **values)
+            except Exception:
+                pass
+
+        return orig_url_for(endpoint, **values)
     return dict(url_for=custom_url_for)
 
 # --- GLOBAL CONTEXT PROCESSOR FOR CART & USER INFO ---

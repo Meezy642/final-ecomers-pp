@@ -11,15 +11,6 @@ def admin_categories():
     categories = {}
     for p in products:
         cat = p.category or 'uncategorized'
-        if cat not in categories:
-            categories[cat] = {
-                'name': cat,
-                'count': 0,
-                'total_value': 0.0,
-                'sample_image': p.image
-            }
-        categories[cat]['count'] += 1
-        categories[cat]['total_value'] += p.price or 0.0
+        categories[cat] = categories.get(cat, 0) + 1
 
-    category_list = sorted(list(categories.values()), key=lambda x: x['count'], reverse=True)
-    return render_template('admin/categories.html', categories=category_list)
+    return render_template('admin/categories.html', categories=categories, total_products=len(products))

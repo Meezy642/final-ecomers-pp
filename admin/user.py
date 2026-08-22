@@ -7,26 +7,12 @@ from admin.dashboard import admin_required
 
 user_bp = Blueprint('admin_user', __name__, url_prefix='/admin')
 
-@user_bp.route('/users')
-@user_bp.route('/user')
+@user_bp.route('/users', endpoint='admin_users')
+@user_bp.route('/user', endpoint='admin_users_alt')
 @admin_required
 def admin_users():
-    try:
-        query = text("SELECT * FROM users ORDER BY id DESC")
-        result = db.session.execute(query)
-        users = [{
-            "id": row.id,
-            "username": row.username,
-            "email": getattr(row, 'email', ''),
-            "phone_number": getattr(row, 'phone_number', ''),
-            "role": row.role,
-            "name": getattr(row, 'name', ''),
-            "create_at": row.create_at.strftime("%d %b %Y, %I:%M %p") if getattr(row, 'create_at', None) else '',
-            "profile_image": getattr(row, 'profile_image', '') or 'no-profile.png'
-        } for row in result]
-    except Exception:
-        users = [u.to_dict() for u in User.query.order_by(User.id.desc()).all()]
-
+    user_records = User.query.order_by(User.id.desc()).all()
+    users = {u.username: u.to_dict() for u in user_records}
     return render_template('admin/users.html', users=users)
 
 @user_bp.route('/users/<int:user_id>')
@@ -38,8 +24,8 @@ def user_details(user_id):
         return redirect(url_for('admin_user.admin_users'))
     return render_template('admin/user_detail.html', user=user)
 
-@user_bp.route('/users/add', methods=['GET', 'POST'])
-@user_bp.route('/user/add', methods=['GET', 'POST'])
+@user_bp.route('/users/add', methods=['GET', 'POST'], endpoint='add_user')
+@user_bp.route('/user/add', methods=['GET', 'POST'], endpoint='admin_add_user')
 @admin_required
 def add_user():
     if request.method == 'POST':
@@ -78,35 +64,38 @@ def add_user():
 
     return render_template('admin/user_form.html', edit_mode=False)
 
-@user_bp.route('/users/edit/<int:user_id>', methods=['GET', 'POST'])
-@user_bp.route('/user/edit/<user_identifier>', methods=['GET', 'POST'])
+@user_bp.route('/users/edit/<username>', methods=['GET', 'POST'], endpoint='edit_user')
+@user_bp.route('/user/edit/<username>', methods=['GET', 'POST'], endpoint='admin_edit_user')
+@user_bp.route('/users/edit/id/<int:user_id>', methods=['GET', 'POST'], endpoint='edit_user_by_id')
 @admin_required
-def edit_user(user_id=None, user_identifier=None):
+def edit_user(username=None, user_id=None):
     if user_id:
         user = User.query.get(user_id)
+    elif username:
+        if str(username).isdigit():
+            user = User.query.get(int(username))
+        if not user:
+            user = User.query.filter_by(username=username).first()
     else:
-        if str(user_identifier).isdigit():
-            user = User.query.get(int(user_identifier))
-        else:
-            user = User.query.filter_by(username=user_identifier).first()
+        user = None
 
     if not user:
         flash('User not found.', 'danger')
         return redirect(url_for('admin_user.admin_users'))
 
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
+        new_username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
         phone_number = request.form.get('phone_number', '').strip()
         role = request.form.get('role', 'customer')
         password = request.form.get('password', '')
         name = request.form.get('name', '').strip()
 
-        if username:
-            user.username = username
+        if new_username:
+            user.username = new_username
         if email:
             user.email = email
-        if phone_number:
+        if phone_number is not None:
             user.phone_number = phone_number
         if role:
             user.role = role
@@ -142,17 +131,20 @@ def edit_user(user_id=None, user_identifier=None):
         user_data=user.to_dict()
     )
 
-@user_bp.route('/users/delete/<int:user_id>', methods=['POST'])
-@user_bp.route('/user/delete/<user_identifier>', methods=['POST'])
+@user_bp.route('/users/delete/<username>', methods=['POST'], endpoint='delete_user')
+@user_bp.route('/user/delete/<username>', methods=['POST'], endpoint='admin_delete_user')
+@user_bp.route('/users/delete/id/<int:user_id>', methods=['POST'], endpoint='delete_user_by_id')
 @admin_required
-def delete_user(user_id=None, user_identifier=None):
+def delete_user(username=None, user_id=None):
     if user_id:
         user = User.query.get(user_id)
+    elif username:
+        if str(username).isdigit():
+            user = User.query.get(int(username))
+        if not user:
+            user = User.query.filter_by(username=username).first()
     else:
-        if str(user_identifier).isdigit():
-            user = User.query.get(int(user_identifier))
-        else:
-            user = User.query.filter_by(username=user_identifier).first()
+        user = None
 
     if not user:
         flash("User not found.", "danger")

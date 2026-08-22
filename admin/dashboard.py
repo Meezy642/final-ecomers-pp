@@ -49,7 +49,7 @@ def admin_dashboard():
 @admin_required
 def admin_orders():
     orders = [o.to_dict() for o in Order.query.order_by(Order.id.desc()).all()]
-    return render_template('admin/orders.html', orders=orders)
+    return render_template('admin/orders.html', orders=orders, all_orders=orders)
 
 @dashboard_bp.route('/contacts')
 @admin_required
