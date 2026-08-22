@@ -1,377 +1,72 @@
 import os
 import json
-import requests
-import secrets
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from flask import Flask, render_template, request, redirect, url_for, make_response, session, flash, jsonify
-from itsdangerous import URLSafeTimedSerializer
+from flask import Flask, url_for, session, request, render_template, redirect, flash
+from flask_migrate import Migrate
 from dotenv import load_dotenv
-from items import items
 
 # Load environment variables
 load_dotenv()
 
+from models import db, User, Product, Order, Contact
+from upload_config import init_upload_config
+from customer import customer_bp
+from admin import dashboard_bp, product_bp, category_bp, user_bp
+from items import items
+
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "premium_ecommerce_secret_key_1337_ystaa")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "super_secret_heng_key")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# --- TELEGRAM BOT CONFIGURATION ---
-BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8797666810:AAFNxpfrEAzVrUVTSYc8cGOwChHRc56AesU")
-CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "-1003719714118,1415187900")
-TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+# Initialize File Upload Configuration
+init_upload_config(app)
 
-# --- SMTP EMAIL CONFIGURATION ---
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 465
-SMTP_EMAIL = os.environ.get("SMTP_EMAIL", "ystaashopp@gmail.com")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "vivsqpkvpsweihtd")
+# Initialize Database & Migrations
+db.init_app(app)
+migrate = Migrate(app, db)
 
-def send_reset_email(to_email, username, reset_url):
-    if not SMTP_PASSWORD:
-        print("SMTP_PASSWORD is not configured. Skipping email dispatch.", flush=True)
-        return False
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['From'] = f"YSTAA SHOPP <{SMTP_EMAIL}>"
-        msg['To'] = to_email
-        msg['Subject'] = "Reset Your Password"
-        
-        # Plain text version (fallback)
-        text_body = (
-            f"Hello {username},\n\n"
-            f"We received a request to reset your password for your YSTAA SHOPP account. "
-            f"Click the link below to choose a new password. This link is valid for 1 hour:\n\n"
-            f"{reset_url}\n\n"
-            f"If you did not request a password reset, you can safely ignore this email.\n\n"
-            f"YSTAA SHOPP - Phnom Penh, Cambodia"
-        )
-        
-        # HTML version
-        html_body = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Reset Your Password - YSTAA SHOPP</title>
-    <style>
-        body {{
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background-color: #0b0f19;
-            color: #e2e8f0;
-            margin: 0;
-            padding: 0;
-        }}
-        .container {{
-            max-width: 600px;
-            margin: 40px auto;
-            background-color: #111827;
-            border: 1px solid #1f2937;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-        }}
-        .header {{
-            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-            padding: 30px;
-            text-align: center;
-        }}
-        .header h1 {{
-            color: #ffffff;
-            margin: 0;
-            font-size: 24px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }}
-        .content {{
-            padding: 40px 30px;
-            line-height: 1.6;
-        }}
-        .content h2 {{
-            color: #ffffff;
-            margin-top: 0;
-            font-size: 20px;
-        }}
-        .content p {{
-            color: #94a3b8;
-            font-size: 16px;
-            margin-bottom: 30px;
-        }}
-        .btn-container {{
-            text-align: center;
-            margin: 40px 0;
-        }}
-        .btn {{
-            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-            color: #ffffff !important;
-            text-decoration: none;
-            padding: 14px 30px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            display: inline-block;
-            box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.4);
-        }}
-        .footer {{
-            background-color: #0f172a;
-            padding: 20px 30px;
-            text-align: center;
-            border-top: 1px solid #1f2937;
-        }}
-        .footer p {{
-            margin: 0;
-            color: #64748b;
-            font-size: 12px;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>YSTAA SHOPP</h1>
-        </div>
-        <div class="content">
-            <h2>Hello {username},</h2>
-            <p>We received a request to reset your password. Click the button below to choose a new password. This link is valid for 1 hour.</p>
-            <div class="btn-container">
-                <a href="{reset_url}" class="btn">Reset Password</a>
-            </div>
-            <p style="margin-bottom: 0;">If you did not request a password reset, you can safely ignore this email.</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2026 YSTAA SHOPP. All rights reserved.</p>
-            <p>Phnom Penh, Cambodia</p>
-        </div>
-    </div>
-</body>
-</html>"""
+# Register Blueprints
+app.register_blueprint(customer_bp)
+app.register_blueprint(dashboard_bp)
+app.register_blueprint(product_bp)
+app.register_blueprint(category_bp)
+app.register_blueprint(user_bp)
 
-        msg.attach(MIMEText(text_body, 'plain'))
-        msg.attach(MIMEText(html_body, 'html'))
-        
-        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
-            server.login(SMTP_EMAIL, SMTP_PASSWORD)
-            server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
-        print(f"Password reset email sent to {to_email} successfully.", flush=True)
-        return True
-    except Exception as e:
-        print(f"Failed to send reset email to {to_email}: {e}", flush=True)
-        return False
-
-
-def send_telegram_message(text):
-    chat_ids = [cid.strip() for cid in CHAT_ID.split(",") if cid.strip()]
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json"
-    }
-    for cid in chat_ids:
-        payload = {
-            "text": text,
-            "parse_mode": "HTML",
-            "chat_id": cid
-        }
+# --- SMART URL_FOR RESOLVER FOR COMPATIBILITY ---
+@app.context_processor
+def utility_processor():
+    orig_url_for = url_for
+    def custom_url_for(endpoint, **values):
         try:
-            telegram_response = requests.post(TELEGRAM_URL, json=payload, headers=headers, timeout=5)
-            print(f"Telegram Bot Status for {cid}: {telegram_response.status_code}", flush=True)
-        except Exception as e:
-            print(f"Failed to push notification to Telegram for {cid}: {e}", flush=True)
-
-# File database mock helpers (Vercel has a read-only filesystem, so use /tmp)
-IS_VERCEL = os.environ.get("VERCEL") or os.environ.get("NOW_REGION")
-
-if IS_VERCEL:
-    USERS_FILE = '/tmp/users.json'
-    CONTACTS_FILE = '/tmp/contacts.json'
-    ORDERS_FILE = '/tmp/orders.json'
-    
-    # Copy initial files if they exist in the project root but not in /tmp
-    import shutil
-    for f_name in ['users.json', 'orders.json']:
-        tmp_path = f'/tmp/{f_name}'
-        if not os.path.exists(tmp_path) and os.path.exists(f_name):
-            try:
-                shutil.copy(f_name, tmp_path)
-            except Exception as e:
-                print(f"Error copying initial DB file {f_name}: {e}")
-else:
-    USERS_FILE = 'users.json'
-    CONTACTS_FILE = 'contacts.json'
-    ORDERS_FILE = 'orders.json'
-
-# MongoDB configuration
-MONGO_URI = os.environ.get("MONGO_URI")
-
-db_client = None
-db = None
-
-if MONGO_URI:
-    try:
-        from pymongo import MongoClient
-        db_client = MongoClient(MONGO_URI)
-        db = db_client.get_database("ystaashopp")
-        print("Connected to MongoDB successfully!", flush=True)
-    except Exception as e:
-        print(f"Failed to connect to MongoDB: {e}", flush=True)
-
-def load_users():
-    if db is not None:
-        try:
-            users_cursor = db.users.find()
-            users = {}
-            for doc in users_cursor:
-                users[doc["_id"]] = {
-                    "email": doc["email"],
-                    "password": doc["password"],
-                    "role": doc.get("role", "customer"),
-                    "name": doc.get("name", ""),
-                    "profile_pic": doc.get("profile_pic", "")
-                }
-            
-            # Safeguard: Auto-provision admin user if missing in MongoDB
-            if "admin" not in users:
-                db.users.update_one(
-                    {"_id": "admin"},
-                    {"$set": {
-                        "email": "admin@localhost.com",
-                        "password": "admin",
-                        "role": "admin"
-                    }},
-                    upsert=True
-                )
-                users["admin"] = {
-                    "email": "admin@localhost.com",
-                    "password": "admin",
-                    "role": "admin"
-                }
-            return users
-        except Exception as e:
-            print(f"MongoDB load_users error: {e}", flush=True)
-
-    if not os.path.exists(USERS_FILE):
-        return {}
-    try:
-        with open(USERS_FILE, 'r') as f:
-            return json.load(f)
-    except Exception:
-        return {}
-
-def save_users(users):
-    if db is not None:
-        try:
-            # Delete users in DB that are no longer in the dictionary
-            existing_usernames = set(users.keys())
-            db.users.delete_many({"_id": {"$nin": list(existing_usernames)}})
-
-            for username, data in users.items():
-                db.users.update_one(
-                    {"_id": username},
-                    {"$set": {
-                        "email": data["email"],
-                        "password": data["password"],
-                        "role": data.get("role", "customer"),
-                        "name": data.get("name", ""),
-                        "profile_pic": data.get("profile_pic", "")
-                    }},
-                    upsert=True
-                )
-            return True
-        except Exception as e:
-            print(f"MongoDB save_users error: {e}", flush=True)
-
-    try:
-        with open(USERS_FILE, 'w') as f:
-            json.dump(users, f, indent=4)
-        return True
-    except Exception as e:
-        print(f"Error saving users: {e}")
-        return False
-
-def save_contact(contact_data):
-    if db is not None:
-        try:
-            db.contacts.insert_one(contact_data)
-            return
-        except Exception as e:
-            print(f"MongoDB save_contact error: {e}", flush=True)
-
-    contacts = []
-    if os.path.exists(CONTACTS_FILE):
-        try:
-            with open(CONTACTS_FILE, 'r') as f:
-                contacts = json.load(f)
+            return orig_url_for(endpoint, **values)
         except Exception:
-            contacts = []
-    contacts.append(contact_data)
-    try:
-        with open(CONTACTS_FILE, 'w') as f:
-            json.dump(contacts, f, indent=4)
-    except Exception as e:
-        print(f"Error saving contact query: {e}")
+            # Fallbacks for blueprint prefixes
+            for prefix in ['customer.', 'admin_dashboard.', 'admin_user.', 'admin_product.', 'admin_category.']:
+                try:
+                    return orig_url_for(prefix + endpoint, **values)
+                except Exception:
+                    pass
+            if '.' in endpoint:
+                base = endpoint.split('.', 1)[1]
+                try:
+                    return orig_url_for(base, **values)
+                except Exception:
+                    pass
+            return orig_url_for(endpoint, **values)
+    return dict(url_for=custom_url_for)
 
-def save_order(username, order_data):
-    if db is not None:
-        try:
-            key = username if username else "guest"
-            doc = {
-                "username": key,
-                "order_data": order_data
-            }
-            db.orders.insert_one(doc)
-            return
-        except Exception as e:
-            print(f"MongoDB save_order error: {e}", flush=True)
-
-    orders = {}
-    if os.path.exists(ORDERS_FILE):
-        try:
-            with open(ORDERS_FILE, 'r') as f:
-                orders = json.load(f)
-        except Exception:
-            orders = {}
-            
-    key = username if username else "guest"
-    if key not in orders:
-        orders[key] = []
-        
-    orders[key].append(order_data)
-    try:
-        with open(ORDERS_FILE, 'w') as f:
-            json.dump(orders, f, indent=4)
-    except Exception as e:
-        print(f"Error saving order: {e}")
-
-def load_orders(username):
-    if db is not None:
-        try:
-            orders_cursor = db.orders.find({"username": username})
-            orders_list = []
-            for doc in orders_cursor:
-                orders_list.append(doc["order_data"])
-            return orders_list
-        except Exception as e:
-            print(f"MongoDB load_orders error: {e}", flush=True)
-
-    if not os.path.exists(ORDERS_FILE):
-        return []
-    try:
-        with open(ORDERS_FILE, 'r') as f:
-            orders = json.load(f)
-            return orders.get(username, [])
-    except Exception:
-        return []
-
-# --- GLOBAL CONTEXT PROCESSOR ---
+# --- GLOBAL CONTEXT PROCESSOR FOR CART & USER INFO ---
 @app.context_processor
 def inject_global_template_vars():
     # 1. Cart Count
     cart_cookie = request.cookies.get('cart')
     cart = json.loads(cart_cookie) if cart_cookie else {}
-    cart_count = sum(cart.values())
+    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
 
     # 2. Wishlist Count
     wishlist_cookie = request.cookies.get('wishlist')
     wishlist = json.loads(wishlist_cookie) if wishlist_cookie else []
-    wishlist_count = len(wishlist)
+    wishlist_count = len(wishlist) if isinstance(wishlist, list) else 0
 
     # 3. Logged-in User, Role, Profile Pic & Display Name
     logged_in_user = session.get('username')
@@ -379,11 +74,17 @@ def inject_global_template_vars():
     logged_in_user_pic = None
     logged_in_user_display_name = None
     if logged_in_user:
-        users = load_users()
-        user_data = users.get(logged_in_user, {})
-        logged_in_user_role = user_data.get('role')
-        logged_in_user_pic = user_data.get('profile_pic')
-        logged_in_user_display_name = user_data.get('name', logged_in_user)
+        try:
+            user = User.query.filter_by(username=logged_in_user).first()
+            if user:
+                logged_in_user_role = user.role
+                pic = user.profile_image if user.profile_image and user.profile_image != 'no-profile.png' else ''
+                if pic and not pic.startswith('/') and not pic.startswith('http') and not pic.startswith('data:'):
+                    pic = f"/static/admin/uploads/{pic}"
+                logged_in_user_pic = pic
+                logged_in_user_display_name = user.name or user.username
+        except Exception:
+            pass
 
     return dict(
         cart_count=cart_count,
@@ -395,1093 +96,103 @@ def inject_global_template_vars():
         logged_in_user_display_name=logged_in_user_display_name
     )
 
-# --- ROUTES ---
-
-@app.route('/')
-def home():
-    return render_template('customer/index.html', item=items)
-
-@app.route('/product')
-def products():
-    q = request.args.get('q', '').strip()
-    selected_categories = request.args.getlist('category')
-    min_price = request.args.get('min_price', type=float)
-    max_price = request.args.get('max_price', type=float)
-    sort_by = request.args.get('sort', '')
-
-    filtered_items = items.copy()
-
-    # Search filter
-    if q:
-        filtered_items = [
-            itm for itm in filtered_items
-            if q.lower() in itm['title'].lower() or q.lower() in itm['description'].lower()
-        ]
-
-    # Category filter
-    if selected_categories:
-        filtered_items = [
-            itm for itm in filtered_items
-            if itm['category'] in selected_categories
-        ]
-
-    # Price filter
-    if min_price is not None:
-        filtered_items = [itm for itm in filtered_items if itm['price'] >= min_price]
-    if max_price is not None:
-        filtered_items = [itm for itm in filtered_items if itm['price'] <= max_price]
-
-    # Sorting
-    if sort_by == 'low_high':
-        filtered_items.sort(key=lambda x: x['price'])
-    elif sort_by == 'high_low':
-        filtered_items.sort(key=lambda x: x['price'], reverse=True)
-    elif sort_by == 'rating':
-        filtered_items.sort(key=lambda x: x['rating']['rate'], reverse=True)
-
-    return render_template(
-        'customer/products.html',
-        item=filtered_items,
-        current_q=q,
-        current_categories=selected_categories,
-        current_min_price=min_price,
-        current_max_price=max_price,
-        current_sort=sort_by
-    )
-
-@app.route('/contact', methods=['GET', 'POST'])
-def contact():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        subject = request.form.get('subject')
-        message = request.form.get('message')
-
-        contact_query = {
-            "name": name,
-            "email": email,
-            "subject": subject,
-            "message": message
-        }
-        save_contact(contact_query)
-
-        # Notify via Telegram
-        telegram_text = f"<b>✉️ NEW CONTACT INQUIRY RECEIVED</b>\n"
-        telegram_text += f"<b>----------------------------------</b>\n\n"
-        telegram_text += f"👤 <b>Name:</b> {name}\n"
-        telegram_text += f"📧 <b>Email:</b> <code>{email}</code>\n"
-        telegram_text += f"📝 <b>Subject:</b> {subject}\n\n"
-        telegram_text += f"💬 <b>Message:</b>\n<i>{message}</i>"
-        send_telegram_message(telegram_text)
-
-        flash("Thank you! Your message has been sent successfully.", "success")
-        return redirect(url_for('contact'))
-
-    return render_template('customer/contact.html')
-
-@app.route('/api/book_showroom', methods=['POST'])
-def book_showroom():
-    data = request.get_json() or {}
-    name = data.get('name')
-    phone = data.get('phone')
-    service = data.get('service')
-    advisor = data.get('advisor')
-    date_val = data.get('date')
-    time_slot = data.get('time')
-    notes = data.get('notes', '')
-
-    # Notify via Telegram
-    telegram_text = f"<b>👑 NEW VIP SHOWROOM BOOKING</b>\n"
-    telegram_text += f"<b>----------------------------------</b>\n\n"
-    telegram_text += f"👤 <b>Client:</b> {name}\n"
-    telegram_text += f"📞 <b>Phone:</b> <code>{phone}</code>\n"
-    telegram_text += f"📅 <b>Date:</b> {date_val}\n"
-    telegram_text += f"⏰ <b>Time:</b> {time_slot}\n"
-    telegram_text += f"💎 <b>Service:</b> {service}\n"
-    telegram_text += f"👔 <b>Advisor:</b> {advisor}\n"
-    if notes:
-        telegram_text += f"\n📝 <b>Special Requests:</b>\n<i>{notes}</i>"
-
-    send_telegram_message(telegram_text)
-    return jsonify({"success": True})
-
-
-@app.route('/about')
-def about():
-    return render_template('customer/about.html')
-
-# --- MOCK AUTHENTICATION SYSTEM ---
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username_or_email = request.form.get('username')
-        password = request.form.get('password')
-
-        users = load_users()
-        # Check if username or email matches and password matches
-        user_found = None
-        for u_name, u_info in users.items():
-            if (u_name == username_or_email or u_info.get('email') == username_or_email) and u_info.get('password') == password:
-                user_found = u_name
-                break
-
-        if user_found:
-            session['username'] = user_found
-            flash(f"Welcome back, {user_found}!", "success")
-            
-            # Check user role and redirect admins directly to admin dashboard
-            user_role = u_info.get('role')
-            if user_role == 'admin':
-                return redirect(url_for('admin_dashboard'))
-                
-            return redirect(url_for('home'))
-        else:
-            flash("Invalid username/email or password.", "error")
-            return redirect(url_for('login'))
-
-    return render_template('share/login.html')
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-
-        if not username or not email or not password:
-            flash("All fields are required.", "error")
-            return redirect(url_for('register'))
-
-        if password != confirm_password:
-            flash("Passwords do not match.", "error")
-            return redirect(url_for('register'))
-
-        users = load_users()
-        if username in users:
-            flash("Username already exists.", "error")
-            return redirect(url_for('register'))
-        
-        # Check email duplicate
-        if any(u.get('email') == email for u in users.values()):
-            flash("Email already registered.", "error")
-            return redirect(url_for('register'))
-
-        users[username] = {
-            "email": email,
-            "password": password
-        }
-        save_users(users)
-
-        session['username'] = username
-        flash("Account created successfully! Welcome to the shop.", "success")
-        return redirect(url_for('home'))
-
-    return render_template('share/register.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('username', None)
-    flash("You have logged out successfully.", "success")
-    return redirect(url_for('home'))
-
-# --- DYNAMIC WISHLIST ROUTING ---
-
-@app.route('/favorites')
-def favorites():
-    wishlist_cookie = request.cookies.get('wishlist')
-    wishlist = json.loads(wishlist_cookie) if wishlist_cookie else []
-
-    wishlist_items = [
-        item for item in items
-        if item['id'] in wishlist
-    ]
-    return render_template('customer/wishlist.html', wishlist_items=wishlist_items)
-
-@app.route('/add_to_wishlist/<int:item_id>', methods=['POST'])
-def add_to_wishlist(item_id):
-    wishlist_cookie = request.cookies.get('wishlist')
-    wishlist = json.loads(wishlist_cookie) if wishlist_cookie else []
-
-    if item_id not in wishlist:
-        wishlist.append(item_id)
-
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        response = make_response(json.dumps({'success': True, 'wishlist_count': len(wishlist)}))
-        response.headers['Content-Type'] = 'application/json'
-        response.set_cookie('wishlist', json.dumps(wishlist), max_age=60 * 60 * 24 * 7)
-        return response
-
-    response = make_response(redirect(request.referrer or url_for('products')))
-    response.set_cookie('wishlist', json.dumps(wishlist), max_age=60 * 60 * 24 * 7)
-    return response
-
-@app.route('/remove_from_wishlist/<int:item_id>', methods=['POST'])
-def remove_from_wishlist(item_id):
-    wishlist_cookie = request.cookies.get('wishlist')
-    wishlist = json.loads(wishlist_cookie) if wishlist_cookie else []
-
-    if item_id in wishlist:
-        wishlist.remove(item_id)
-
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        response = make_response(json.dumps({'success': True, 'wishlist_count': len(wishlist)}))
-        response.headers['Content-Type'] = 'application/json'
-        response.set_cookie('wishlist', json.dumps(wishlist), max_age=60 * 60 * 24 * 7)
-        return response
-
-    response = make_response(redirect(request.referrer or url_for('favorites')))
-    response.set_cookie('wishlist', json.dumps(wishlist), max_age=60 * 60 * 24 * 7)
-    return response
-
-
-# --- CART FUNCTIONALITY ---
-
-@app.route('/view_product/<int:item_id>')
-def view_product(item_id):
-    current_item = next((item for item in items if item['id'] == item_id), None)
-    if not current_item:
-        return render_template('customer/404.html'), 404
-
-    related_products = [
-        item for item in items
-        if item['category'] == current_item['category'] and item['id'] != item_id
-    ][:4]  # Limit to 4 related items
-
-    # Check if item is in user's wishlist
-    wishlist_cookie = request.cookies.get('wishlist')
-    wishlist = json.loads(wishlist_cookie) if wishlist_cookie else []
-    in_wishlist = item_id in wishlist
-
-    return render_template(
-        'customer/view_product.html',
-        item=current_item,
-        related_products=related_products,
-        in_wishlist=in_wishlist
-    )
-
-@app.route('/add_to_cart/<int:item_id>', methods=['POST'])
-def add_to_cart(item_id):
-    cart_cookie = request.cookies.get('cart')
-    cart = json.loads(cart_cookie) if cart_cookie else {}
-
-    str_item_id = str(item_id)
-    if str_item_id in cart:
-        cart[str_item_id] += 1
-    else:
-        cart[str_item_id] = 1
-
-    # Fetch product title for flash message
-    product = next((item for item in items if item['id'] == item_id), None)
-    prod_title = product['title'][:20] + "..." if product else "Product"
-    
-    # Calculate new cart count
-    cart_count = sum(cart.values())
-
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        response = make_response(jsonify({
-            "success": True,
-            "cart_count": cart_count,
-            "message": f"Added {prod_title} to your cart!"
-        }))
-        response.set_cookie('cart', json.dumps(cart), max_age=60 * 60 * 24 * 7)
-        return response
-
-    flash(f"Added {prod_title} to your cart!", "success")
-    response = make_response(redirect(request.referrer or url_for('cart')))
-    response.set_cookie('cart', json.dumps(cart), max_age=60 * 60 * 24 * 7)
-    return response
-
-@app.route('/cart')
-def cart():
-    cart_cookie = request.cookies.get('cart')
-    cart = json.loads(cart_cookie) if cart_cookie else {}
-
-    cart_items = []
-    total_price = 0
-
-    for item_id_str, quantity in cart.items():
-        product = next((item for item in items if str(item['id']) == item_id_str), None)
-        if product:
-            item_total = product['price'] * quantity
-            total_price += item_total
-            cart_items.append({
-                'product': product,
-                'quantity': quantity,
-                'item_total': round(item_total, 2)
-            })
-
-    return render_template(
-        'customer/cart.html',
-        cart_items=cart_items,
-        total_price=round(total_price, 2)
-    )
-
-@app.route('/increase_cart/<int:item_id>', methods=['POST'])
-def increase_cart(item_id):
-    cart_cookie = request.cookies.get('cart')
-    cart = json.loads(cart_cookie) if cart_cookie else {}
-
-    str_item_id = str(item_id)
-    if str_item_id in cart:
-        cart[str_item_id] += 1
-
-    response = make_response(redirect(url_for('cart')))
-    response.set_cookie('cart', json.dumps(cart), max_age=60 * 60 * 24 * 7)
-    return response
-
-@app.route('/decrease_cart/<int:item_id>', methods=['POST'])
-def decrease_cart(item_id):
-    cart_cookie = request.cookies.get('cart')
-    cart = json.loads(cart_cookie) if cart_cookie else {}
-
-    str_item_id = str(item_id)
-    if str_item_id in cart:
-        if cart[str_item_id] > 1:
-            cart[str_item_id] -= 1
-        else:
-            cart.pop(str_item_id)
-
-    response = make_response(redirect(url_for('cart')))
-    response.set_cookie('cart', json.dumps(cart), max_age=60 * 60 * 24 * 7)
-    return response
-
-@app.route('/remove_from_cart/<int:item_id>', methods=['POST'])
-def remove_from_cart(item_id):
-    cart_cookie = request.cookies.get('cart')
-    cart = json.loads(cart_cookie) if cart_cookie else {}
-
-    str_item_id = str(item_id)
-    if str_item_id in cart:
-        cart.pop(str_item_id)
-
-    flash("Item removed from cart.", "success")
-    response = make_response(redirect(url_for('cart')))
-    response.set_cookie('cart', json.dumps(cart), max_age=60 * 60 * 24 * 7)
-    return response
-
-@app.route('/clear_cart')
-def clear_cart():
-    flash("Shopping cart cleared.", "success")
-    response = make_response(redirect(url_for('cart')))
-    response.delete_cookie('cart')
-    return response
-
-# --- CHECKOUT & ORDER ROUTING ---
-
-@app.route('/checkout')
-def checkout():
-    cart_cookie = request.cookies.get('cart')
-    cart = json.loads(cart_cookie) if cart_cookie else {}
-
-    cart_items = []
-    total_price = 0
-
-    for item_id_str, quantity in cart.items():
-        product = next((item for item in items if str(item['id']) == item_id_str), None)
-        if product:
-            item_total = product['price'] * quantity
-            total_price += item_total
-            cart_items.append({
-                'product': product,
-                'quantity': quantity,
-                'item_total': round(item_total, 2)
-            })
-
-    if not cart_items:
-        flash("Your cart is empty. Please add items before checkout.", "error")
-        return redirect(url_for('cart'))
-
-    # Retrieve current user details if logged in
-    user_email = ""
-    username = session.get('username')
-    if username:
-        users = load_users()
-        user_email = users.get(username, {}).get('email', '')
-
-    return render_template(
-        'customer/checkout.html',
-        cart_items=cart_items,
-        total_price=round(total_price, 2),
-        buyer_username=username,
-        buyer_email=user_email
-    )
-
-@app.route('/place_order', methods=['POST'])
-def place_order():
-    buyer_name = request.form.get('buyer_name')
-    buyer_phone = request.form.get('buyer_phone')
-    buyer_email = request.form.get('buyer_email')
-    buyer_address = request.form.get('buyer_address')
-    order_notes = request.form.get('order_notes', 'N/A')
-    
-    payment_method = request.form.get('payment_method', 'khqr')
-    if payment_method == 'card':
-        payment_display = "Visa / MasterCard - Paid"
-    elif payment_method == 'paypal':
-        payment_display = "PayPal Account - Paid"
-    else:
-        payment_display = "Bakong KHQR - Paid"
-
-    cart_cookie = request.cookies.get('cart')
-    cart = json.loads(cart_cookie) if cart_cookie else {}
-
-    if not cart:
-        flash("Your cart was empty. Order failed.", "error")
-        return redirect(url_for('cart'))
-
-    item_list_text = ""
-    total_price = 0
-
-    for item_id_str, quantity in cart.items():
-        product = next((item for item in items if str(item['id']) == item_id_str), None)
-        if product:
-            item_total = product['price'] * quantity
-            total_price += item_total
-            item_list_text += f"📦 <b>{product['title'][:25]}...</b>\n"
-            item_list_text += f"   └ Qty: {quantity} × ${product['price']:.2f} = <b>${item_total:.2f}</b>\n\n"
-
-    # Generate unique order ID
-    import random
-    order_id = f"YS-{random.randint(100000, 999999)}"
-
-    # Save order details in session temporarily to show on success screen
-    session['last_order'] = {
-        "order_id": order_id,
-        "buyer_name": buyer_name,
-        "buyer_phone": buyer_phone,
-        "buyer_email": buyer_email,
-        "buyer_address": buyer_address,
-        "order_notes": order_notes,
-        "payment_method": payment_display,
-        "total_price": round(total_price, 2),
-        "items_summary": [
-            {
-                "title": next((item['title'] for item in items if str(item['id']) == k), "Product"),
-                "quantity": v,
-                "price": next((item['price'] for item in items if str(item['id']) == k), 0.0)
-            }
-            for k, v in cart.items()
-        ]
-    }
-
-    # Always save order details to orders.json
-    username = session.get('username')
-    import datetime
-    timestamp = datetime.datetime.now().strftime("%d %b %Y, %I:%M %p")
-    order_record = {
-        "order_id": order_id,
-        "timestamp": timestamp,
-        "payment_method": payment_display,
-        "total_price": round(total_price, 2),
-        "buyer_name": buyer_name,
-        "buyer_phone": buyer_phone,
-        "buyer_email": buyer_email,
-        "buyer_address": buyer_address,
-        "order_notes": order_notes,
-        "items": [
-            {
-                "title": next((item['title'] for item in items if str(item['id']) == k), "Product"),
-                "quantity": v,
-                "price": next((item['price'] for item in items if str(item['id']) == k), 0.0),
-                "image": next((item['image'] for item in items if str(item['id']) == k), "")
-            }
-            for k, v in cart.items()
-        ]
-    }
-    save_order(username, order_record)
-
-    # Construct Telegram notification message
-    telegram_text = f"<b>🔔 NEW ORDER RECEIVED ({payment_method.upper()})</b>\n"
-    telegram_text += f"<b>----------------------------------</b>\n\n"
-    telegram_text += f"👤 <b>Customer:</b> {buyer_name}\n"
-    telegram_text += f"📞 <b>Phone:</b> <code>{buyer_phone}</code>\n"
-    telegram_text += f"📧 <b>Email:</b> <code>{buyer_email}</code>\n"
-    telegram_text += f"📍 <b>Address:</b> {buyer_address}\n"
-    telegram_text += f"📝 <b>Notes:</b> <i>{order_notes}</i>\n\n"
-    telegram_text += f"<b>🛒 ORDER ITEMS:</b>\n"
-    telegram_text += item_list_text
-    telegram_text += f"<b>----------------------------------</b>\n"
-    telegram_text += f"💰 <b>TOTAL PAID: ${total_price:.2f} USD ({payment_display})</b>"
-    send_telegram_message(telegram_text)
-
-
-    # Redirect to success page and clear cart
-    response = make_response(redirect(url_for('order_success')))
-    response.delete_cookie('cart')
-    return response
-
-@app.route('/order_success')
-def order_success():
-    order = session.get('last_order')
-    if not order:
-        return redirect(url_for('home'))
-    return render_template('customer/order_success.html', order=order)
-
-@app.route('/profile')
-def profile():
-    username = session.get('username')
-    if not username:
-        flash("Please log in to view your profile.", "error")
-        return redirect(url_for('login'))
-        
-    # Get user details
-    users = load_users()
-    user_data = users.get(username, {})
-    email = user_data.get('email', 'N/A')
-    profile_pic = user_data.get('profile_pic', '')
-    role = user_data.get('role', 'customer')
-    name = user_data.get('name', username)
-    
-    # Select layout template dynamically
-    if role == 'admin':
-        layout_template = 'admin/layout.html'
-    else:
-        layout_template = 'customer/layout.html'
-    
-    # Load orders
-    user_orders = load_orders(username)
-    
-    # Reverse so the latest order is at the top
-    user_orders = list(reversed(user_orders))
-    
-    return render_template(
-        'customer/profile.html', 
-        username=username, 
-        email=email, 
-        name=name,
-        orders=user_orders,
-        profile_pic=profile_pic,
-        layout_template=layout_template
-    )
-
-@app.route('/change_profile', methods=['POST'])
-def change_profile():
-    if 'username' not in session:
-        flash("Please log in first.", "error")
-        return redirect(url_for('login'))
-        
-    username = session['username']
-    name = request.form.get('name', '').strip()
-    email = request.form.get('email', '').strip()
-    
-    if not email:
-        flash("Email is required.", "error")
-        return redirect(url_for('profile'))
-        
-    users = load_users()
-    if username in users:
-        users[username]['name'] = name
-        users[username]['email'] = email
-        save_users(users)
-        flash("Profile updated successfully.", "success")
-    else:
-        flash("User not found.", "error")
-        
-    return redirect(url_for('profile'))
-
-@app.route('/api/upload_avatar', methods=['POST'])
-def upload_avatar():
-    if 'username' not in session:
-        return jsonify({"success": False, "message": "Unauthorized"}), 401
-        
-    data = request.get_json() or {}
-    image_data = data.get('image')
-    
-    if not image_data:
-        return jsonify({"success": False, "message": "No image data received"}), 400
-        
-    username = session['username']
-    users = load_users()
-    if username in users:
-        users[username]['profile_pic'] = image_data
-        save_users(users)
-        return jsonify({"success": True, "message": "Profile picture updated successfully!"})
-        
-    return jsonify({"success": False, "message": "User not found"}), 404
-
-@app.route('/api/delete_avatar', methods=['POST'])
-def delete_avatar():
-    if 'username' not in session:
-        return jsonify({"success": False, "message": "Unauthorized"}), 401
-        
-    username = session['username']
-    users = load_users()
-    if username in users:
-        users[username]['profile_pic'] = ""
-        save_users(users)
-        return jsonify({"success": True, "message": "Profile picture removed successfully!"})
-        
-    return jsonify({"success": False, "message": "User not found"}), 404
-
-@app.route('/change_password', methods=['POST'])
-def change_password():
-    if 'username' not in session:
-        flash("Please log in first.", "error")
-        return redirect(url_for('login'))
-        
-    username = session['username']
-    current_password = request.form.get('current_password')
-    new_password = request.form.get('new_password')
-    confirm_password = request.form.get('confirm_password')
-    
-    if not current_password or not new_password or not confirm_password:
-        flash("All password fields are required.", "error")
-        return redirect(url_for('profile'))
-        
-    if new_password != confirm_password:
-        flash("New passwords do not match.", "error")
-        return redirect(url_for('profile'))
-        
-    users = load_users()
-    user_info = users.get(username)
-    
-    if not user_info or user_info.get('password') != current_password:
-        flash("Incorrect current password.", "error")
-        return redirect(url_for('profile'))
-        
-    # Update password
-    users[username]['password'] = new_password
-    save_users(users)
-    
-    flash("Your password has been updated successfully.", "success")
-    return redirect(url_for('profile'))
-
-@app.route('/forgot_password', methods=['GET', 'POST'])
-def forgot_password():
-    if request.method == 'POST':
-        email = request.form.get('email', '').strip()
-        if not email:
-            flash("Please enter your email address.", "error")
-            return redirect(url_for('forgot_password'))
-            
-        users = load_users()
-        user_found = None
-        username_found = None
-        for username, u_info in users.items():
-            if u_info.get('email') == email:
-                user_found = u_info
-                username_found = username
-                break
-                
-        if username_found:
-            # Generate a secure reset token
-            serializer = URLSafeTimedSerializer(app.secret_key)
-            token = serializer.dumps(username_found, salt='password-reset-salt')
-            
-            # Construct reset URL (supporting proxy headers for live domains like Vercel)
-            host = request.headers.get('X-Forwarded-Host') or request.headers.get('Host') or request.host
-            proto = request.headers.get('X-Forwarded-Proto') or request.scheme
-            base_url = f"{proto}://{host}"
-            reset_url = base_url.rstrip('/') + url_for('reset_password', token=token)
-
-            # Send real email
-            send_reset_email(email, username_found, reset_url)
-
-            
-            # Log to console
-            print(f"Password reset link generated for {username_found}: {reset_url}", flush=True)
-            
-            flash("If your email is registered, we have sent a reset link to it. Please check your inbox.", "success")
-        else:
-            # Show same success message to prevent user enumeration
-            print(f"Password reset requested for unregistered email: {email}", flush=True)
-            flash("If your email is registered, we have sent a reset link to it. Please check your inbox.", "success")
-            
-        return redirect(url_for('login'))
-        
-    return render_template('share/forgot_password.html')
-
-@app.route('/reset_password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    serializer = URLSafeTimedSerializer(app.secret_key)
-    try:
-        # Token expires after 1 hour (3600 seconds)
-        username = serializer.loads(token, salt='password-reset-salt', max_age=3600)
-    except Exception:
-        username = None
-        
-    if not username:
-        flash("The reset link is invalid or has expired.", "error")
-        return redirect(url_for('login'))
-        
-    if request.method == 'POST':
-        new_password = request.form.get('new_password')
-        confirm_password = request.form.get('confirm_password')
-        
-        if not new_password or not confirm_password:
-            flash("Please enter and confirm your new password.", "error")
-            return render_template('share/reset_password.html')
-            
-        if new_password != confirm_password:
-            flash("New passwords do not match.", "error")
-            return render_template('share/reset_password.html')
-            
-        users = load_users()
-        if username in users:
-            users[username]['password'] = new_password
-            save_users(users)
-            flash("Your password has been reset successfully. Please log in with your new password.", "success")
-            return redirect(url_for('login'))
-        else:
-            flash("User not found.", "error")
-            return redirect(url_for('login'))
-            
-    return render_template('share/reset_password.html')
-
-
-
-def find_order_by_id(order_id):
-    if not os.path.exists(ORDERS_FILE):
-        return None, None
-    try:
-        with open(ORDERS_FILE, 'r') as f:
-            orders = json.load(f)
-        for user_key, user_orders in orders.items():
-            for o in user_orders:
-                if str(o.get('order_id')).strip().upper() == str(order_id).strip().upper():
-                    return o, user_key
-    except Exception as e:
-        print(f"Error finding order: {e}")
-    return None, None
-
-def get_order_status(timestamp_str):
-    try:
-        import datetime
-        order_time = datetime.datetime.strptime(timestamp_str, "%d %b %Y, %I:%M %p")
-        now = datetime.datetime.now()
-        diff = (now - order_time).total_seconds()
-        if diff < 120: # 2 minutes
-            return "Order Placed & Processing", 1
-        elif diff < 600: # 10 minutes
-            return "Showroom Packaging", 2
-        elif diff < 3600: # 1 hour
-            return "Dispatched & In Transit", 3
-        else:
-            return "Arrived & Delivered", 4
-    except Exception:
-        return "Dispatched & In Transit", 3
-
-@app.route('/api/track_order/<order_id>')
-def track_order_api(order_id):
-    order, user_key = find_order_by_id(order_id)
-    if order:
-        status_text, status_code = get_order_status(order.get('timestamp', ''))
-        return jsonify({
-            "success": True,
-            "order_id": order.get('order_id'),
-            "buyer_name": order.get('buyer_name'),
-            "timestamp": order.get('timestamp'),
-            "total_price": order.get('total_price'),
-            "items": order.get('items', []),
-            "status_text": status_text,
-            "status_code": status_code
-        })
-    else:
-        return jsonify({
-            "success": False,
-            "message": f"Order ID '{order_id}' not found. Please verify the code and try again."
-        })
-
-# =====================================================
-# ADMIN PANEL ROUTES
-# =====================================================
-from functools import wraps
-
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        username = session.get('username')
-        if not username:
-            flash("Please log in to access the admin panel.", "error")
-            return redirect(url_for('login'))
-        users = load_users()
-        user = users.get(username, {})
-        if user.get('role') != 'admin':
-            flash("Access denied. Admin privileges required.", "error")
-            return redirect(url_for('home'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-def load_all_orders():
-    """Load all orders from all users."""
-    if db is not None:
+# --- DATABASE SEEDING & INITIALIZATION ---
+with app.app_context():
+    db.create_all()
+
+    # 1. Seed Products from items.py if empty
+    if Product.query.count() == 0:
+        for itm in items:
+            rating = itm.get('rating', {})
+            p = Product(
+                id=itm['id'],
+                title=itm['title'],
+                price=float(itm['price']),
+                description=itm.get('description', ''),
+                category=itm.get('category', 'general'),
+                image=itm.get('image', ''),
+                rating_rate=float(rating.get('rate', 4.0)),
+                rating_count=int(rating.get('count', 0))
+            )
+            db.session.add(p)
+        db.session.commit()
+        print("Seeded products successfully into SQLite database.")
+
+    # 2. Seed Users from users.json if empty, or ensure default admin
+    if User.query.count() == 0:
+        if os.path.exists('users.json'):
+            try:
+                with open('users.json', 'r') as f:
+                    u_data = json.load(f)
+                    for u_name, u_info in u_data.items():
+                        new_u = User(
+                            username=u_name,
+                            email=u_info.get('email', f"{u_name}@localhost.com"),
+                            password=u_info.get('password', '123456'),
+                            role=u_info.get('role', 'customer'),
+                            name=u_info.get('name', u_name),
+                            profile_image=u_info.get('profile_pic') or 'no-profile.png'
+                        )
+                        db.session.add(new_u)
+                    db.session.commit()
+            except Exception as e:
+                print(f"Error seeding users from users.json: {e}")
+
+    # Ensure admin user exists
+    if not User.query.filter_by(username='admin').first():
+        admin_user = User(
+            username='admin',
+            email='admin@localhost.com',
+            password='admin',
+            role='admin',
+            name='Administrator',
+            profile_image='no-profile.png'
+        )
+        db.session.add(admin_user)
+        db.session.commit()
+        print("Default admin user created (admin / admin).")
+
+    # 3. Seed Orders from orders.json if empty
+    if Order.query.count() == 0 and os.path.exists('orders.json'):
         try:
-            orders_cursor = db.orders.find()
-            all_orders = []
-            for doc in orders_cursor:
-                all_orders.append(doc["order_data"])
-            return all_orders
+            with open('orders.json', 'r') as f:
+                orders_data = json.load(f)
+                for user_key, order_list in orders_data.items():
+                    for ord_item in order_list:
+                        new_o = Order(
+                            order_id=ord_item.get('order_id', f"YS-{ord_item.get('timestamp', '')[:6]}"),
+                            username=user_key if user_key != 'guest' else None,
+                            buyer_name=ord_item.get('buyer_name', ''),
+                            buyer_phone=ord_item.get('buyer_phone', ''),
+                            buyer_email=ord_item.get('buyer_email', ''),
+                            buyer_address=ord_item.get('buyer_address', ''),
+                            order_notes=ord_item.get('order_notes', ''),
+                            payment_method=ord_item.get('payment_method', 'Bakong KHQR - Paid'),
+                            total_price=float(ord_item.get('total_price', 0.0)),
+                            items_json=json.dumps(ord_item.get('items', [])),
+                            timestamp=ord_item.get('timestamp', '')
+                        )
+                        db.session.add(new_o)
+                db.session.commit()
         except Exception as e:
-            print(f"MongoDB load_all_orders error: {e}", flush=True)
+            print(f"Error seeding orders: {e}")
 
-    if not os.path.exists(ORDERS_FILE):
-        return []
-    try:
-        with open(ORDERS_FILE, 'r') as f:
-            orders = json.load(f)
-            all_orders = []
-            for user_key, user_orders in orders.items():
-                all_orders.extend(user_orders)
-            return all_orders
-    except Exception:
-        return []
-
-def load_contacts():
-    """Load all contact messages."""
-    if db is not None:
+    # 4. Seed Contacts from contacts.json if empty
+    if Contact.query.count() == 0 and os.path.exists('contacts.json'):
         try:
-            contacts_cursor = db.contacts.find()
-            return list(contacts_cursor)
+            with open('contacts.json', 'r') as f:
+                contacts_data = json.load(f)
+                for c_item in contacts_data:
+                    new_c = Contact(
+                        name=c_item.get('name', 'Anonymous'),
+                        email=c_item.get('email', 'no-reply@example.com'),
+                        subject=c_item.get('subject', ''),
+                        message=c_item.get('message', '')
+                    )
+                    db.session.add(new_c)
+                db.session.commit()
         except Exception as e:
-            print(f"MongoDB load_contacts error: {e}", flush=True)
-
-    if not os.path.exists(CONTACTS_FILE):
-        return []
-    try:
-        with open(CONTACTS_FILE, 'r') as f:
-            return json.load(f)
-    except Exception:
-        return []
-
-# --- Admin Dashboard ---
-@app.route('/admin')
-@app.route('/admin/dashboard')
-@admin_required
-def admin_dashboard():
-    users = load_users()
-    all_orders = load_all_orders()
-    total_revenue = sum(o.get('total_price', 0) for o in all_orders)
-
-    # Category breakdown
-    categories = {}
-    for item in items:
-        cat = item.get('category', 'uncategorized')
-        categories[cat] = categories.get(cat, 0) + 1
-
-    # Recent orders (latest 5)
-    recent_orders = sorted(all_orders, key=lambda x: x.get('timestamp', ''), reverse=True)[:5]
-
-    return render_template('admin/dashboard.html',
-        total_users=len(users),
-        total_products=len(items),
-        total_orders=len(all_orders),
-        total_revenue=total_revenue,
-        categories=categories,
-        recent_orders=recent_orders,
-        users=users
-    )
-
-# --- User Management ---
-@app.route('/admin/user')
-@admin_required
-def admin_users():
-    users = load_users()
-    return render_template('admin/users.html', users=users)
-
-@app.route('/admin/user/add', methods=['GET', 'POST'])
-@admin_required
-def admin_add_user():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()
-        password = request.form.get('password', '')
-        role = request.form.get('role', 'customer')
-
-        if not username or not email or not password:
-            flash("All fields are required.", "error")
-            return redirect(url_for('admin_add_user'))
-
-        users = load_users()
-        if username in users:
-            flash("Username already exists.", "error")
-            return redirect(url_for('admin_add_user'))
-
-        users[username] = {
-            "email": email,
-            "password": password,
-            "role": role
-        }
-        save_users(users)
-        flash(f"User '{username}' created successfully!", "success")
-        return redirect(url_for('admin_users'))
-
-    return render_template('admin/user_form.html', edit_mode=False)
-
-@app.route('/admin/user/edit/<username>', methods=['GET', 'POST'])
-@admin_required
-def admin_edit_user(username):
-    users = load_users()
-    if username not in users:
-        flash("User not found.", "error")
-        return redirect(url_for('admin_users'))
-
-    if request.method == 'POST':
-        email = request.form.get('email', '').strip()
-        password = request.form.get('password', '')
-        role = request.form.get('role', 'customer')
-
-        if not email:
-            flash("Email is required.", "error")
-            return redirect(url_for('admin_edit_user', username=username))
-
-        users[username]['email'] = email
-        if password:
-            users[username]['password'] = password
-        users[username]['role'] = role
-        save_users(users)
-
-        flash(f"User '{username}' updated successfully!", "success")
-        return redirect(url_for('admin_users'))
-
-    return render_template('admin/user_form.html',
-        edit_mode=True,
-        edit_username=username,
-        user_data=users[username]
-    )
-
-@app.route('/admin/user/delete/<username>', methods=['POST'])
-@admin_required
-def admin_delete_user(username):
-    users = load_users()
-    if username not in users:
-        flash("User not found.", "error")
-        return redirect(url_for('admin_users'))
-
-    # Prevent self-deletion
-    if username == session.get('username'):
-        flash("You cannot delete your own account.", "error")
-        return redirect(url_for('admin_users'))
-
-    del users[username]
-    save_users(users)
-    flash(f"User '{username}' deleted successfully!", "success")
-    return redirect(url_for('admin_users'))
-
-# --- Product Management ---
-@app.route('/admin/products')
-@admin_required
-def admin_products():
-    return render_template('admin/products.html', products=items)
-
-@app.route('/admin/products/add', methods=['GET', 'POST'])
-@admin_required
-def admin_add_product():
-    categories = list(set(item['category'] for item in items))
-
-    if request.method == 'POST':
-        title = request.form.get('title', '').strip()
-        price = float(request.form.get('price', 0))
-        category = request.form.get('category', '')
-        new_category = request.form.get('new_category', '').strip()
-        description = request.form.get('description', '').strip()
-        image = request.form.get('image', '').strip()
-        rating_rate = float(request.form.get('rating_rate', 4.0))
-        rating_count = int(request.form.get('rating_count', 0))
-
-        if category == '__new__' and new_category:
-            category = new_category
-
-        # Generate new ID
-        max_id = max((item['id'] for item in items), default=0)
-        new_id = max_id + 1
-
-        new_product = {
-            "id": new_id,
-            "title": title,
-            "price": price,
-            "description": description,
-            "category": category,
-            "image": image,
-            "rating": {
-                "rate": rating_rate,
-                "count": rating_count
-            }
-        }
-        items.append(new_product)
-        flash(f"Product '{title}' added successfully!", "success")
-        return redirect(url_for('admin_products'))
-
-    return render_template('admin/product_form.html',
-        edit_mode=False,
-        categories=categories
-    )
-
-@app.route('/admin/products/edit/<int:product_id>', methods=['GET', 'POST'])
-@admin_required
-def admin_edit_product(product_id):
-    product = next((item for item in items if item['id'] == product_id), None)
-    if not product:
-        flash("Product not found.", "error")
-        return redirect(url_for('admin_products'))
-
-    categories = list(set(item['category'] for item in items))
-
-    if request.method == 'POST':
-        product['title'] = request.form.get('title', '').strip()
-        product['price'] = float(request.form.get('price', 0))
-        category = request.form.get('category', '')
-        new_category = request.form.get('new_category', '').strip()
-        if category == '__new__' and new_category:
-            category = new_category
-        product['category'] = category
-        product['description'] = request.form.get('description', '').strip()
-        product['image'] = request.form.get('image', '').strip()
-        product['rating']['rate'] = float(request.form.get('rating_rate', 4.0))
-        product['rating']['count'] = int(request.form.get('rating_count', 0))
-
-        flash(f"Product '{product['title']}' updated successfully!", "success")
-        return redirect(url_for('admin_products'))
-
-    return render_template('admin/product_form.html',
-        edit_mode=True,
-        product=product,
-        categories=categories
-    )
-
-@app.route('/admin/products/delete/<int:product_id>', methods=['POST'])
-@admin_required
-def admin_delete_product(product_id):
-    product = next((item for item in items if item['id'] == product_id), None)
-    if product:
-        items.remove(product)
-        flash(f"Product '{product['title']}' deleted successfully!", "success")
-    else:
-        flash("Product not found.", "error")
-    return redirect(url_for('admin_products'))
-
-@app.route('/admin/categories')
-@admin_required
-def admin_categories():
-    categories = {}
-    for item in items:
-        cat = item.get('category', 'uncategorized')
-        categories[cat] = categories.get(cat, 0) + 1
-    return render_template('admin/categories.html',
-        categories=categories,
-        total_products=len(items)
-    )
-
-# --- Order Management ---
-@app.route('/admin/orders')
-@admin_required
-def admin_orders():
-    all_orders = load_all_orders()
-    all_orders = sorted(all_orders, key=lambda x: x.get('timestamp', ''), reverse=True)
-    return render_template('admin/orders.html', all_orders=all_orders)
-
-# --- Contact Messages ---
-@app.route('/admin/contacts')
-@admin_required
-def admin_contacts():
-    contacts = load_contacts()
-    return render_template('admin/contacts.html', contacts=contacts)
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('customer/404.html'), 404
+            print(f"Error seeding contacts: {e}")
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
