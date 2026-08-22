@@ -20,7 +20,7 @@
     </div>
 
     <div class="card-body" style="padding: 1.75rem;">
-        <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_user.edit_user', user_id=user.id) if edit_mode else url_for('admin_user.add_user') }}" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_user.user_edit', id=user.id) if edit_mode else url_for('admin_user.user_create') }}" style="display: flex; flex-direction: column; gap: 1.25rem;">
             
             <!-- Avatar Upload Section with Preview -->
             {% set avatar_src = (user.profile_image if user else user_data.profile_image) if edit_mode else '' %}

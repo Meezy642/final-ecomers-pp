@@ -37,10 +37,18 @@ ENDPOINT_ALIASES = {
     'admin_dashboard': 'admin_dashboard.admin_dashboard',
     'admin_orders': 'admin_dashboard.admin_orders',
     'admin_contacts': 'admin_dashboard.admin_contacts',
-    'admin_users': 'admin_user.admin_users',
-    'admin_add_user': 'admin_user.admin_add_user',
-    'admin_edit_user': 'admin_user.admin_edit_user',
-    'admin_delete_user': 'admin_user.admin_delete_user',
+    'user_index': 'admin_user.user_index',
+    'user_create': 'admin_user.user_create',
+    'user_edit': 'admin_user.user_edit',
+    'user_delete': 'admin_user.user_delete',
+    'admin.user_index': 'admin_user.user_index',
+    'admin.user_create': 'admin_user.user_create',
+    'admin.user_edit': 'admin_user.user_edit',
+    'admin.user_delete': 'admin_user.user_delete',
+    'admin_users': 'admin_user.user_index',
+    'admin_add_user': 'admin_user.user_create',
+    'admin_edit_user': 'admin_user.user_edit',
+    'admin_delete_user': 'admin_user.user_delete',
     'admin_products': 'admin_product.admin_products',
     'admin_add_product': 'admin_product.admin_add_product',
     'admin_edit_product': 'admin_product.admin_edit_product',
@@ -77,6 +85,12 @@ ENDPOINT_ALIASES = {
 def utility_processor():
     orig_url_for = url_for
     def custom_url_for(endpoint, **values):
+        # Normalize id / user_id parameter if present
+        if 'user_id' in values and 'id' not in values:
+            values['id'] = values.get('user_id')
+        if 'id' in values and 'user_id' not in values:
+            values['user_id'] = values.get('id')
+
         # 1. Check alias dictionary first
         target = ENDPOINT_ALIASES.get(endpoint, endpoint)
         try:
