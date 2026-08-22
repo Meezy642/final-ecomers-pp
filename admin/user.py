@@ -103,7 +103,7 @@ def user_edit(id):
             user.email = email
 
         if username and username != user.username:
-            if User.query.filter(User.username == new_username, User.id != user.id).first():
+            if User.query.filter(User.username == username, User.id != user.id).first():
                 flash("Username already exists! Please choose a different username.", "danger")
                 return render_template("admin/user/edit.html", user=user, edit_mode=True, edit_username=user.username)
             user.username = username
