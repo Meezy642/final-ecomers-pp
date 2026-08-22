@@ -110,9 +110,9 @@
                                 <a href="{{ url_for('admin.user_edit', id=u.id) }}" class="btn btn-sm btn-info" style="background: #3b82f6; border-color: #3b82f6; color: #fff; font-weight: 600; border-radius: 6px; padding: 6px 12px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;" title="Edit Profile">
                                     <i class="fas fa-user-edit"></i> Edit
                                 </a>
-                                <button type="button" onclick="openDeleteModal({{ u.id }}, '{{ username }}', '{{ u.name or username }}', '{{ avatar_src }}')" class="btn btn-sm btn-danger" style="background: #ef4444; border-color: #ef4444; color: #fff; font-weight: 600; border-radius: 6px; padding: 6px 12px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;" title="Delete User">
+                                <a href="{{ url_for('admin.user_delete', id=u.id) }}" class="btn btn-sm btn-danger" style="background: #ef4444; border-color: #ef4444; color: #fff; font-weight: 600; border-radius: 6px; padding: 6px 12px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" title="Delete User">
                                     <i class="fas fa-trash-alt"></i> Delete
-                                </button>
+                                </a>
                             </div>
                         </td>
                     </tr>
