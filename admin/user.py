@@ -11,7 +11,8 @@ user_bp = Blueprint('admin_user', __name__, url_prefix='/admin')
 @user_bp.route('/user', endpoint='admin_users_alt')
 @admin_required
 def admin_users():
-    user_records = User.query.order_by(User.id.desc()).all()
+    # Only list customer accounts (exclude system admin)
+    user_records = User.query.filter(User.username != 'admin', User.role != 'admin').order_by(User.id.desc()).all()
     users = {u.username: u.to_dict() for u in user_records}
     return render_template('admin/users.html', users=users)
 
