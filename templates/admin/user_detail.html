@@ -1,0 +1,103 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}User Details - {{ user.username }}{% endblock %}
+{% block breadcrumb %}Users{% endblock %}
+{% block page_title %}User Profile: {{ user.name or user.username }}{% endblock %}
+{% block page_breadcrumb %}Users / {{ user.username }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="card" style="background: #111827; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        
+        <!-- Header Banner -->
+        <div style="background: linear-gradient(135deg, #7c3aed, #4f46e5); padding: 2.5rem 2rem; position: relative; display: flex; align-items: center; gap: 24px;">
+            {% set avatar_src = user.profile_image %}
+            {% if avatar_src and not avatar_src.startswith('/') and not avatar_src.startswith('http') and not avatar_src.startswith('data:') and avatar_src != 'no-profile.png' %}
+                {% set avatar_src = '/static/admin/uploads/' + avatar_src %}
+            {% endif %}
+
+            {% if avatar_src and avatar_src != 'no-profile.png' %}
+                <img src="{{ avatar_src }}" alt="{{ user.username }}" 
+                     style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.4);">
+            {% else %}
+                <div style="width: 90px; height: 90px; border-radius: 50%; background: #1e1b4b; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 2rem; border: 4px solid #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.4);">
+                    {{ user.username[:2]|upper }}
+                </div>
+            {% endif %}
+
+            <div>
+                <h2 style="margin: 0; color: #fff; font-size: 1.5rem; font-weight: 800;">{{ user.name or user.username }}</h2>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
+                    <span style="color: #e0e7ff; font-size: 0.9rem;"><i class="fas fa-at"></i> {{ user.username }}</span>
+                    {% if user.role == 'admin' %}
+                        <span class="badge" style="background: #10b981; color: #fff; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 0.75rem;">Admin</span>
+                    {% else %}
+                        <span class="badge" style="background: rgba(255,255,255,0.25); color: #fff; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 0.75rem;">Customer</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Body -->
+        <div class="card-body" style="padding: 2rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                
+                <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                        <i class="far fa-envelope" style="color: #8b5cf6;"></i> Email Address
+                    </div>
+                    <div style="font-weight: 600; color: #f8fafc; font-size: 0.95rem;">
+                        {{ user.email }}
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-phone-alt" style="color: #10b981;"></i> Phone Number
+                    </div>
+                    <div style="font-weight: 600; color: #f8fafc; font-size: 0.95rem;">
+                        {{ user.phone_number or 'Not provided' }}
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                        <i class="far fa-calendar-alt" style="color: #3b82f6;"></i> Registration Date
+                    </div>
+                    <div style="font-weight: 600; color: #f8fafc; font-size: 0.95rem;">
+                        {{ user.create_at.strftime("%d %b %Y, %I:%M %p") if user.create_at else 'N/A' }}
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-hashtag" style="color: #f59e0b;"></i> User Database ID
+                    </div>
+                    <div style="font-weight: 600; color: #f8fafc; font-size: 0.95rem;">
+                        #{{ user.id }}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Action buttons -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08);">
+                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; font-weight: 600; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Back to Users List
+                </a>
+
+                <div style="display: flex; gap: 10px;">
+                    <a href="{{ url_for('admin_edit_user', username=user.username) }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; background: #8b5cf6; border-color: #8b5cf6; padding: 10px 20px; border-radius: 8px; font-weight: 600; text-decoration: none;">
+                        <i class="fas fa-edit"></i> Edit User
+                    </a>
+                    <form action="{{ url_for('admin_delete_user', username=user.username) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete user: {{ user.username }}?')">
+                        <button type="submit" class="btn btn-danger" style="display: inline-flex; align-items: center; gap: 6px; background: #ef4444; border-color: #ef4444; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
+                            <i class="fas fa-trash-alt"></i> Delete User
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

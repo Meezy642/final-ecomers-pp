@@ -2,64 +2,141 @@
 
 {% block title %}{{ 'Edit User' if edit_mode else 'Add New User' }}{% endblock %}
 {% block breadcrumb %}{{ 'Edit User' if edit_mode else 'Add User' }}{% endblock %}
-{% block page_title %}{{ 'Edit User: ' + edit_username if edit_mode else 'Add New User' }}{% endblock %}
+{% block page_title %}{{ 'Edit User: ' + (user.name or edit_username) if edit_mode else 'Create New User' }}{% endblock %}
 {% block page_breadcrumb %}Users / {{ 'Edit' if edit_mode else 'Add' }}{% endblock %}
 
 {% block content %}
-<div class="card card-form">
-    <div class="card-header">
-        <h3 class="card-title">
-            <i class="fas {{ 'fa-user-edit' if edit_mode else 'fa-user-plus' }}"></i> 
-            {{ 'Edit User' if edit_mode else 'Create New User' }}
-        </h3>
+<div class="card card-form" style="max-width: 800px; margin: 0 auto; background: #111827; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <div class="card-header" style="padding: 1.25rem 1.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px;">
+        <i class="fas {{ 'fa-user-edit' if edit_mode else 'fa-user-plus' }}" style="font-size: 1.3rem; color: #8b5cf6;"></i>
+        <div>
+            <h3 class="card-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff;">
+                {{ 'Edit User Account' if edit_mode else 'Create New User' }}
+            </h3>
+            <p style="margin: 0; font-size: 0.8rem; color: #94a3b8;">
+                {{ 'Update account credentials, profile photo, and permissions' if edit_mode else 'Fill in user details and assign permissions' }}
+            </p>
+        </div>
     </div>
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('admin_edit_user', username=edit_username) if edit_mode else url_for('admin_add_user') }}">
-            <div class="form-group">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" id="username" name="username" class="form-control" 
-                       value="{{ edit_username if edit_mode else '' }}" 
-                       {{ 'readonly' if edit_mode else '' }}
-                       placeholder="Enter username" required>
-                {% if edit_mode %}
-                <small class="form-text">Username cannot be changed</small>
-                {% endif %}
+
+    <div class="card-body" style="padding: 1.75rem;">
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_edit_user', username=edit_username) if edit_mode else url_for('admin_add_user') }}" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            
+            <!-- Avatar Upload Section with Preview -->
+            {% set avatar_src = (user.profile_image if user else user_data.profile_image) if edit_mode else '' %}
+            {% if avatar_src and not avatar_src.startswith('/') and not avatar_src.startswith('http') and not avatar_src.startswith('data:') and avatar_src != 'no-profile.png' %}
+                {% set avatar_src = '/static/admin/uploads/' + avatar_src %}
+            {% endif %}
+
+            <div style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(139, 92, 246, 0.4); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 20px;">
+                <div style="position: relative;">
+                    <img id="avatarPreview" src="{{ avatar_src if (avatar_src and avatar_src != 'no-profile.png') else 'https://ui-avatars.com/api/?name=' + (edit_username or 'User') + '&background=7c3aed&color=fff' }}" 
+                         alt="Preview" 
+                         style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #8b5cf6; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label" style="font-weight: 600; color: #f8fafc; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-camera" style="color: #8b5cf6;"></i> Profile Picture
+                    </label>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 8px;">Upload a PNG, JPG, or WEBP image (max 16MB)</p>
+                    <input type="file" id="profile" name="profile" accept="image/*" class="form-control" style="background: #1f2937; border: 1px solid #374151; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem;" onchange="previewImage(this)">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" id="email" name="email" class="form-control" 
-                       value="{{ user_data.email if edit_mode else '' }}"
-                       placeholder="Enter email address" required>
+            <!-- Two-Column Form Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <!-- Username -->
+                <div class="form-group">
+                    <label for="username" class="form-label" style="font-weight: 600; color: #f8fafc; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <i class="fas fa-at" style="color: #8b5cf6;"></i> Username <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="text" id="username" name="username" class="form-control" 
+                           value="{{ edit_username if edit_mode else '' }}" 
+                           placeholder="e.g. johndoe" required style="background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 8px; padding: 10px 14px;">
+                </div>
+
+                <!-- Display Name -->
+                <div class="form-group">
+                    <label for="name" class="form-label" style="font-weight: 600; color: #f8fafc; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <i class="fas fa-id-card" style="color: #8b5cf6;"></i> Full / Display Name
+                    </label>
+                    <input type="text" id="name" name="name" class="form-control" 
+                           value="{{ (user.name if user else user_data.name) if edit_mode else '' }}" 
+                           placeholder="e.g. John Doe" style="background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 8px; padding: 10px 14px;">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="password" class="form-label">{{ 'New Password' if edit_mode else 'Password' }}</label>
-                <input type="password" id="password" name="password" class="form-control" 
-                       placeholder="{{ 'Leave blank to keep current password' if edit_mode else 'Enter password' }}"
-                       {{ '' if edit_mode else 'required' }}>
-                {% if edit_mode %}
-                <small class="form-text">Leave blank to keep the current password</small>
-                {% endif %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email" class="form-label" style="font-weight: 600; color: #f8fafc; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <i class="far fa-envelope" style="color: #8b5cf6;"></i> Email Address <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="email" id="email" name="email" class="form-control" 
+                           value="{{ (user.email if user else user_data.email) if edit_mode else '' }}"
+                           placeholder="e.g. john@example.com" required style="background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 8px; padding: 10px 14px;">
+                </div>
+
+                <!-- Phone Number -->
+                <div class="form-group">
+                    <label for="phone_number" class="form-label" style="font-weight: 600; color: #f8fafc; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <i class="fas fa-phone-alt" style="color: #8b5cf6;"></i> Phone Number
+                    </label>
+                    <input type="text" id="phone_number" name="phone_number" class="form-control" 
+                           value="{{ (user.phone_number if user else user_data.phone_number) if edit_mode else '' }}"
+                           placeholder="e.g. +855 12 345 678" style="background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 8px; padding: 10px 14px;">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="role" class="form-label">Role</label>
-                <select id="role" name="role" class="form-control">
-                    <option value="customer" {{ 'selected' if (edit_mode and user_data.get('role', 'customer') == 'customer') else ('' if edit_mode else 'selected') }}>Customer</option>
-                    <option value="admin" {{ 'selected' if (edit_mode and user_data.get('role') == 'admin') else '' }}>Admin</option>
-                </select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <!-- Role Selection -->
+                <div class="form-group">
+                    <label for="role" class="form-label" style="font-weight: 600; color: #f8fafc; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <i class="fas fa-shield-alt" style="color: #8b5cf6;"></i> User Role
+                    </label>
+                    {% set current_role = (user.role if user else user_data.get('role', 'customer')) if edit_mode else 'customer' %}
+                    <select id="role" name="role" class="form-control" style="background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 8px; padding: 10px 14px;">
+                        <option value="customer" {{ 'selected' if current_role == 'customer' else '' }}>Customer (Regular Storefront User)</option>
+                        <option value="admin" {{ 'selected' if current_role == 'admin' else '' }}>Admin (Full Management Privileges)</option>
+                    </select>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="password" class="form-label" style="font-weight: 600; color: #f8fafc; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <i class="fas fa-lock" style="color: #8b5cf6;"></i> {{ 'Change Password' if edit_mode else 'Password *' }}
+                    </label>
+                    <input type="password" id="password" name="password" class="form-control" 
+                           placeholder="{{ 'Leave empty to keep current password' if edit_mode else 'Enter secure password' }}"
+                           {{ '' if edit_mode else 'required' }} style="background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 8px; padding: 10px 14px;">
+                    {% if edit_mode %}
+                    <small style="font-size: 0.75rem; color: #64748b; margin-top: 4px; display: block;">Only type if you wish to reset this user's password</small>
+                    {% endif %}
+                </div>
             </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> {{ 'Update User' if edit_mode else 'Create User' }}
-                </button>
-                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Cancel
+            <!-- Form Actions -->
+            <div class="form-actions" style="margin-top: 1rem; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; gap: 12px; justify-content: flex-end;">
+                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; font-weight: 600; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Back to Users
                 </a>
+                <button type="submit" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: #8b5cf6; border-color: #8b5cf6; padding: 10px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);">
+                    <i class="fas fa-save"></i> {{ 'Save Changes' if edit_mode else 'Create User' }}
+                </button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatarPreview').src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 {% endblock %}

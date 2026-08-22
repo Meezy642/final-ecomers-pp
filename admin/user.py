@@ -69,6 +69,7 @@ def add_user():
 @user_bp.route('/users/edit/id/<int:user_id>', methods=['GET', 'POST'], endpoint='edit_user_by_id')
 @admin_required
 def edit_user(username=None, user_id=None):
+    user = None
     if user_id:
         user = User.query.get(user_id)
     elif username:
@@ -76,8 +77,6 @@ def edit_user(username=None, user_id=None):
             user = User.query.get(int(username))
         if not user:
             user = User.query.filter_by(username=username).first()
-    else:
-        user = None
 
     if not user:
         flash('User not found.', 'danger')
@@ -136,6 +135,7 @@ def edit_user(username=None, user_id=None):
 @user_bp.route('/users/delete/id/<int:user_id>', methods=['POST'], endpoint='delete_user_by_id')
 @admin_required
 def delete_user(username=None, user_id=None):
+    user = None
     if user_id:
         user = User.query.get(user_id)
     elif username:
@@ -143,8 +143,6 @@ def delete_user(username=None, user_id=None):
             user = User.query.get(int(username))
         if not user:
             user = User.query.filter_by(username=username).first()
-    else:
-        user = None
 
     if not user:
         flash("User not found.", "danger")
