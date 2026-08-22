@@ -12,6 +12,7 @@ from . import admin_bp
 # </admin/user>
 @admin_bp.route("/user")
 def user_index():
+    # noinspection SqlNoDataSourceInspection,SqlResolve
     sql = text("SELECT * FROM user")
     result = db.session.execute(sql)
     users = result.mappings().all()
@@ -29,7 +30,7 @@ def user_create():
         role = request.form.get("role", "customer")
         name = request.form.get("name", username).strip()
 
-        # # User.query.filter_by call ORM
+        # User.query.filter_by call ORM
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash("Email already exists! Please use a different email.", "danger")
