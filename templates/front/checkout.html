@@ -1,0 +1,382 @@
+{% extends "customer/layout.html" %}
+
+{% block content %}
+<style>
+    /* Premium 3D Flipping Card CSS rules */
+    .perspective-1000 {
+        perspective: 1000px;
+    }
+    .transform-style-3d {
+        transform-style: preserve-3d;
+    }
+    .backface-hidden {
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+        transform: rotateY(180deg);
+    }
+    .card-flipped {
+        transform: rotateY(180deg);
+    }
+    
+    /* Custom tab indicators */
+    .pay-tab-active {
+        border-color: #8b5cf6 !important;
+        background-color: rgba(139, 92, 246, 0.05) !important;
+        color: #a78bfa !important;
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+    }
+</style>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="flex flex-col lg:flex-row gap-8 items-start">
+        
+        <!-- Left: Form Card (7 cols) -->
+        <div class="flex-grow w-full lg:col-span-7 bg-zinc-900/40 p-6 sm:p-8 rounded-3xl border border-zinc-850 shadow-2xl relative overflow-hidden space-y-8">
+            <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
+            
+            <form id="checkoutForm" action="{{ url_for('place_order') }}" method="POST" class="space-y-8">
+                <!-- Hidden payment method parameter -->
+                <input type="hidden" name="payment_method" id="payment-method-input" value="card">
+                
+                <!-- Section 1: Shipping Details -->
+                <div class="space-y-5">
+                    <h3 class="text-xl font-extrabold text-white border-b border-zinc-800/80 pb-3 font-heading flex items-center gap-2">
+                        <i class="fas fa-truck text-purple-400"></i> Shipping Address
+                    </h3>
+                    
+                    <div class="form-group-field">
+                        <label for="buyer_name" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Full Name</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="buyer_name" name="buyer_name" value="{{ buyer_username if buyer_username else '' }}" placeholder="Sok Chan" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="form-group-field">
+                            <label for="buyer_phone" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phone Contact</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-phone input-icon"></i>
+                                <input type="tel" id="buyer_phone" name="buyer_phone" placeholder="012 345 678" required>
+                            </div>
+                        </div>
+                        <div class="form-group-field">
+                            <label for="buyer_email" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="buyer_email" name="buyer_email" value="{{ buyer_email if buyer_email else '' }}" placeholder="chan@example.com" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group-field">
+                        <label for="buyer_address" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Delivery Destination Address</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-map-marker-alt input-icon"></i>
+                            <input type="text" id="buyer_address" name="buyer_address" placeholder="Street number, Sangkat, Khan, Province/City..." required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group-field">
+                        <label for="order_notes" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Special Delivery Instructions (Optional)</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-sticky-note input-icon"></i>
+                            <textarea id="order_notes" name="order_notes" placeholder="Instructions for the courier (e.g. deliver to reception...)" class="h-20"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 2: Payment Selector & Methods -->
+                <div class="space-y-6">
+                    <h3 class="text-xl font-extrabold text-white border-b border-zinc-800/80 pb-3 font-heading flex items-center gap-2">
+                        <i class="fas fa-wallet text-purple-400"></i> Payment Details
+                    </h3>
+                    
+                    <!-- Selector Tabs Row -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <button type="button" onclick="selectPaymentTab('card')" id="pay-btn-card" class="pay-tab-active py-3.5 px-3 border border-zinc-800 rounded-xl bg-zinc-950/20 text-slate-400 hover:text-white flex flex-col sm:flex-row items-center justify-center gap-2 text-xs font-bold cursor-pointer transition-all duration-300 focus:outline-none">
+                            <i class="fas fa-credit-card text-sm"></i>
+                            <span class="text-center sm:text-left">Visa / MC</span>
+                        </button>
+                        <button type="button" onclick="selectPaymentTab('paypal')" id="pay-btn-paypal" class="py-3.5 px-3 border border-zinc-800 rounded-xl bg-zinc-950/20 text-slate-400 hover:text-white flex flex-col sm:flex-row items-center justify-center gap-2 text-xs font-bold cursor-pointer transition-all duration-300 focus:outline-none">
+                            <i class="fab fa-paypal text-sm"></i>
+                            <span class="text-center sm:text-left">PayPal</span>
+                        </button>
+                        <button type="button" onclick="selectPaymentTab('khqr')" id="pay-btn-khqr" class="py-3.5 px-3 border border-zinc-800 rounded-xl bg-zinc-950/20 text-slate-400 hover:text-white flex flex-col sm:flex-row items-center justify-center gap-2 text-xs font-bold cursor-pointer transition-all duration-300 focus:outline-none">
+                            <i class="fas fa-qrcode text-sm"></i>
+                            <span class="text-center sm:text-left">Bakong QR</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Method 1 Panel: Visa Card Checkout -->
+                    <div id="pay-panel-card" class="pay-panel space-y-6">
+                        <!-- Visa graphical card preview -->
+                        <div class="perspective-1000 relative w-full max-w-[320px] h-[190px] mx-auto my-2">
+                            <div id="credit-card-preview" class="transform-style-3d relative w-full h-full transition-transform duration-500 rounded-2xl shadow-xl">
+                                <!-- Card Front -->
+                                <div class="backface-hidden absolute inset-0 w-full h-full bg-gradient-to-br from-zinc-800 via-indigo-950 to-purple-900 rounded-2xl p-5 flex flex-col justify-between border border-zinc-700/40 text-white shadow-2xl">
+                                    <div class="flex justify-between items-start">
+                                        <div class="h-7 w-10 bg-amber-400/25 border border-amber-400/35 rounded flex items-center justify-center">
+                                            <div class="w-5.5 h-4 bg-amber-400/30 rounded-sm"></div>
+                                        </div>
+                                        <div class="text-base font-black tracking-widest font-heading text-slate-350">VISA</div>
+                                    </div>
+                                    
+                                    <div class="text-base font-bold tracking-widest font-heading text-center my-3" id="mock-number">•••• •••• •••• ••••</div>
+                                    
+                                    <div class="flex justify-between items-end">
+                                        <div class="min-w-0 flex-grow pr-3">
+                                            <span class="text-[7px] uppercase text-slate-400 block tracking-wider leading-none mb-1">Card Holder</span>
+                                            <span class="text-[10px] font-bold uppercase truncate block" id="mock-name">YOUR NAME</span>
+                                        </div>
+                                        <div class="flex-shrink-0 text-right">
+                                            <span class="text-[7px] uppercase text-slate-400 block tracking-wider leading-none mb-1">Expires</span>
+                                            <span class="text-[10px] font-bold block" id="mock-expiry">MM/YY</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card Back -->
+                                <div class="backface-hidden rotate-y-180 absolute inset-0 w-full h-full bg-gradient-to-br from-purple-950 via-zinc-900 to-zinc-950 rounded-2xl flex flex-col justify-between py-4 border border-zinc-700/40 text-white shadow-2xl">
+                                    <div class="w-full h-9 bg-zinc-950/80 mb-1"></div>
+                                    <div class="px-5">
+                                        <span class="text-[7px] uppercase text-slate-400 block tracking-wider mb-1 text-right">CVV</span>
+                                        <div class="w-full bg-white h-7.5 rounded px-3 flex items-center justify-end text-zinc-900 text-xs font-black tracking-widest" id="mock-cvv">•••</div>
+                                    </div>
+                                    <div class="px-5 flex justify-end">
+                                        <span class="text-[8px] font-black text-slate-500 font-heading">YSTAA BOUTIQUE</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Credit Card inputs -->
+                        <div class="space-y-4">
+                            <div class="form-group-field">
+                                <label for="card-holder-input" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cardholder Name</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-signature input-icon"></i>
+                                    <input type="text" id="card-holder-input" placeholder="e.g. SOK CHAN" class="card-field uppercase">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group-field">
+                                <label for="card-number-input" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Card Number</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-credit-card input-icon"></i>
+                                    <input type="text" id="card-number-input" placeholder="0000 0000 0000 0000" maxlength="19" class="card-field">
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-group-field">
+                                    <label for="card-expiry-input" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Expiration Date</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-calendar input-icon"></i>
+                                        <input type="text" id="card-expiry-input" placeholder="MM/YY" maxlength="5" class="card-field">
+                                    </div>
+                                </div>
+                                <div class="form-group-field">
+                                    <label for="card-cvv-input" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">CVV Code</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-lock input-icon"></i>
+                                        <input type="text" id="card-cvv-input" placeholder="000" maxlength="3" class="card-field">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Method 2 Panel: PayPal Portal Mock -->
+                    <div id="pay-panel-paypal" class="pay-panel hidden bg-zinc-950/30 p-5 border border-zinc-800 rounded-2xl text-center space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-950/30 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl mx-auto shadow-md">
+                            <i class="fab fa-paypal"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-white font-bold text-sm">PayPal Redirect Authorization</h4>
+                            <p class="text-slate-400 text-xs max-w-sm mx-auto leading-relaxed">Confirm your details and click check out. You will authorize checkout securely via your PayPal account balance or cards.</p>
+                        </div>
+                        <div class="form-group-field max-w-xs mx-auto text-left pt-2">
+                            <label for="paypal-email" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">PayPal Email Address</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="paypal-email" placeholder="paypal-account@email.com" class="paypal-field text-xs">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Method 3 Panel: KHQR Scan Mock -->
+                    <div id="pay-panel-khqr" class="pay-panel hidden bg-zinc-950/30 p-6 border border-zinc-800 rounded-2xl text-center flex flex-col items-center justify-center">
+                        <p class="text-xs font-bold text-slate-200">YSTAA SHOPP CO., LTD.</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Phnom Penh, KH</p>
+                        
+                        <!-- QR Image box -->
+                        <div class="bg-white p-5 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.06)] my-4 relative group hover:shadow-[0_8px_30px_rgba(124,58,237,0.12)] transition-all duration-300">
+                            <img src="{{ url_for('static', filename='img/khqr.png') }}" alt="KHQR Code" class="w-36 h-36 object-contain">
+                        </div>
+                        
+                        <p class="text-[10px] text-slate-400 leading-relaxed max-w-[200px]">
+                            Scan this QR with Bakong or any mobile banking application in Cambodia to complete payment.
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Right: Order Summary Sidebar (5 cols equivalent) -->
+        <div class="w-full lg:w-96 flex-shrink-0 bg-zinc-900/40 p-6 rounded-3xl border border-zinc-850 shadow-2xl relative overflow-hidden space-y-6">
+            <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
+            
+            <div class="space-y-4 relative">
+                <h3 class="text-lg font-extrabold text-white border-b border-zinc-800 pb-3 font-heading flex items-center gap-2">
+                    <i class="fas fa-receipt text-purple-400 text-sm"></i> Order Summary
+                </h3>
+                
+                <!-- Items list -->
+                <div class="divide-y divide-zinc-800/40 space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                    {% for itm in cart_items %}
+                    <div class="flex items-center gap-3 py-2">
+                        <div class="w-10 h-10 bg-white border border-zinc-800 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                            <img src="{{ itm.product.image }}" alt="{{ itm.product.title }}" class="max-w-full max-h-full object-contain mix-blend-multiply">
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <h5 class="text-white font-bold text-xs truncate" title="{{ itm.product.title }}">{{ itm.product.title }}</h5>
+                            <p class="text-[10px] text-slate-400">Qty: {{ itm.quantity }} × ${{ "%.2f"|format(itm.product.price) }}</p>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <span class="text-xs font-bold text-slate-350">${{ "%.2f"|format(itm.item_total) }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Price Breakdowns -->
+                <div class="border-t border-zinc-800/60 pt-4 space-y-2.5 text-xs font-medium">
+                    <div class="flex justify-between text-slate-450">
+                        <span>Subtotal</span>
+                        <span class="text-slate-300 font-bold">${{ "%.2f"|format(total_price) }}</span>
+                    </div>
+                    <div class="flex justify-between text-slate-450">
+                        <span>Shipping Cost</span>
+                        <span class="text-emerald-450 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 uppercase tracking-widest text-[9px]">Free</span>
+                    </div>
+                    <div class="flex justify-between text-white font-bold border-t border-zinc-800/60 pt-3 mt-2">
+                        <span class="text-sm font-heading">Total Amount</span>
+                        <span class="text-purple-400 text-base font-black font-heading">${{ "%.2f"|format(total_price) }} USD</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit and Back Actions -->
+            <div class="space-y-3 pt-2">
+                <button type="submit" form="checkoutForm" id="complete-checkout-btn" class="w-full py-4 bg-gradient-to-r from-purple-500 to-indigo-650 hover:from-purple-600 hover:to-indigo-755 hover:shadow-purple-500/20 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] text-xs">
+                    Confirm Visa Payment <i class="fas fa-arrow-right text-[10px]"></i>
+                </button>
+                <a href="{{ url_for('cart') }}" class="w-full py-3 bg-zinc-950/40 hover:bg-zinc-950/70 border border-zinc-800 hover:border-zinc-700 text-slate-400 hover:text-white font-bold rounded-xl text-center text-xs block transition-all shadow-md">
+                    Cancel & Return to Cart
+                </a>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    // Payment Tab switching controller
+    function selectPaymentTab(tabName) {
+        // Update hidden input parameter
+        document.getElementById('payment-method-input').value = tabName;
+        
+        // Hide all method panels
+        const panels = document.querySelectorAll('.pay-panel');
+        panels.forEach(p => p.classList.add('hidden'));
+        
+        // Show active panel
+        document.getElementById(`pay-panel-${tabName}`).classList.remove('hidden');
+        
+        // Reset navigation tab button styles
+        const buttons = document.querySelectorAll('[id^="pay-btn-"]');
+        buttons.forEach(btn => {
+            btn.classList.remove('pay-tab-active');
+        });
+        
+        // Apply active class to selected button
+        document.getElementById(`pay-btn-${tabName}`).classList.add('pay-tab-active');
+        
+        // Update submit button text and validation rules
+        const submitBtn = document.getElementById('complete-checkout-btn');
+        const cardFields = document.querySelectorAll('.card-field');
+        const paypalField = document.querySelector('.paypal-field');
+        
+        if (tabName === 'card') {
+            submitBtn.innerHTML = `Confirm Visa Payment <i class="fas fa-arrow-right text-[10px]"></i>`;
+            cardFields.forEach(f => f.setAttribute('required', 'required'));
+            paypalField.removeAttribute('required');
+        } else if (tabName === 'paypal') {
+            submitBtn.innerHTML = `Authenticate PayPal Account <i class="fab fa-paypal text-sm"></i>`;
+            cardFields.forEach(f => f.removeAttribute('required'));
+            paypalField.setAttribute('required', 'required');
+        } else if (tabName === 'khqr') {
+            submitBtn.innerHTML = `I Have Paid via KHQR <i class="fas fa-check-circle text-sm"></i>`;
+            cardFields.forEach(f => f.removeAttribute('required'));
+            paypalField.removeAttribute('required');
+        }
+    }
+
+    // Graphical Card Preview live handlers
+    document.addEventListener('DOMContentLoaded', () => {
+        const cardNumberInput = document.getElementById('card-number-input');
+        const cardHolderInput = document.getElementById('card-holder-input');
+        const cardExpiryInput = document.getElementById('card-expiry-input');
+        const cardCvvInput = document.getElementById('card-cvv-input');
+        const cardPreview = document.getElementById('credit-card-preview');
+        
+        // Set fields required by default
+        selectPaymentTab('card');
+
+        // Number field formatter
+        cardNumberInput.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            // Group in blocks of 4 digits
+            let formatted = val.match(/.{1,4}/g);
+            e.target.value = formatted ? formatted.join(' ') : '';
+            
+            document.getElementById('mock-number').textContent = e.target.value || '•••• •••• •••• ••••';
+        });
+
+        // Holder Name formatter
+        cardHolderInput.addEventListener('input', (e) => {
+            let val = e.target.value.toUpperCase();
+            document.getElementById('mock-name').textContent = val || 'YOUR NAME';
+        });
+
+        // Expiry date formatter (MM/YY)
+        cardExpiryInput.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            if (val.length >= 2) {
+                e.target.value = val.slice(0, 2) + '/' + val.slice(2, 4);
+            } else {
+                e.target.value = val;
+            }
+            document.getElementById('mock-expiry').textContent = e.target.value || 'MM/YY';
+        });
+
+        // CVV code formatter & flip trigger
+        cardCvvInput.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            e.target.value = val;
+            document.getElementById('mock-cvv').textContent = val ? '•'.repeat(val.length) : '•••';
+        });
+
+        cardCvvInput.addEventListener('focus', () => {
+            cardPreview.classList.add('card-flipped');
+        });
+
+        cardCvvInput.addEventListener('blur', () => {
+            cardPreview.classList.remove('card-flipped');
+        });
+    });
+</script>
+{% endblock %}

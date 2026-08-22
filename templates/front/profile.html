@@ -1,0 +1,593 @@
+{% extends layout_template | default('customer/layout.html') %}
+
+{% block title %}Profile{% endblock %}
+{% block breadcrumb %}Profile{% endblock %}
+{% block page_title %}Profile{% endblock %}
+{% block page_breadcrumb %}Profile{% endblock %}
+
+{% block content %}
+{% if layout_template == 'admin/layout.html' %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    heading: ['Outfit', 'sans-serif'],
+                }
+            }
+        }
+    }
+</script>
+<style>
+    /* Light Mode Clean Redesign Overrides for Admin Profile */
+    .text-zinc-800 { color: #212529 !important; }
+    .text-zinc-500 { color: #6c757d !important; }
+    .text-blue-500 { color: #007bff !important; }
+    
+    /* Input design adjustments */
+    .form-group-field {
+        margin-bottom: 1rem;
+    }
+    .input-icon-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background-color: #ffffff !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 6px !important;
+        padding-left: 12px;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .input-icon-wrapper:focus-within {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+    }
+    .input-icon {
+        color: #495057 !important;
+        font-size: 0.9rem;
+        margin-right: 8px;
+    }
+    .input-icon-wrapper input {
+        width: 100%;
+        border: none !important;
+        background: transparent !important;
+        color: #495057 !important;
+        font-size: 0.9rem !important;
+        padding: 8px 12px 8px 4px !important;
+        outline: none !important;
+    }
+    .input-icon-wrapper input::placeholder {
+        color: #6c757d !important;
+        opacity: 0.6;
+    }
+</style>
+{% endif %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    {% if logged_in_user_role == 'admin' %}
+    <!-- =====================================================
+       ADMIN PROFILE CLEAN REDESIGN
+       ===================================================== -->
+    <div class="space-y-6">
+        <!-- Top Nav & Badge Bar -->
+        <div class="flex justify-end pb-2">
+            <span class="text-xs font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-full border border-blue-200">
+                <i class="fas fa-shield-alt mr-1"></i> Admin Account
+            </span>
+        </div>
+
+        <!-- 3-Column Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            
+            <!-- Left Pane: Summary card -->
+            <div class="bg-white border border-zinc-200 rounded-xl p-6 text-center flex flex-col justify-between shadow-sm min-h-[360px]">
+                <div class="space-y-6">
+                    <!-- Circular Avatar Upload container -->
+                    <div class="relative w-28 h-28 mx-auto group">
+                        <div id="avatar-container" class="w-28 h-28 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 text-3xl font-black border border-zinc-200 overflow-hidden shadow-inner">
+                            {% if profile_pic %}
+                            <img src="{{ profile_pic }}" alt="Avatar" class="w-full h-full object-cover" id="avatar-image">
+                            {% else %}
+                            <span id="avatar-initials" class="text-zinc-600 font-extrabold">{{ username[:2] | upper }}</span>
+                            {% endif %}
+                        </div>
+                        <!-- Camera overlay on hover -->
+                        <div onclick="triggerAvatarUpload()" class="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-[10px] text-white font-bold cursor-pointer border-2 border-blue-500">
+                            <i class="fas fa-camera text-lg mb-1"></i>
+                            Change
+                        </div>
+                        <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="handleAvatarFile(this)">
+                    </div>
+                    
+                    <div id="remove-avatar-btn-container" class="{% if not profile_pic %}hidden{% endif %}" style="margin-top: 0.5rem;">
+                        <button type="button" onclick="deleteAvatar()" class="text-[11px] text-red-500 hover:text-red-700 hover:underline focus:outline-none cursor-pointer">
+                            <i class="fas fa-trash-alt mr-1"></i> Remove Photo
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-extrabold text-zinc-800 tracking-tight">{{ name if name else username }}</h3>
+                        <p class="text-xs text-zinc-500 break-all">{{ email }}</p>
+                    </div>
+                </div>
+                
+                <!-- Sign Out -->
+                <div class="border-t border-zinc-150 pt-5 mt-6">
+                    <a href="{{ url_for('logout') }}" class="w-full py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-300 text-red-600 hover:text-red-700 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm">
+                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Pane: Forms (span 2 cols) -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Account settings card -->
+                <div class="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+                    <h4 class="text-base font-bold text-zinc-800 border-b border-zinc-150 pb-3 mb-4 flex items-center gap-2">
+                        <i class="far fa-user text-blue-500"></i> Account Information
+                    </h4>
+                    
+                    <form action="{{ url_for('change_profile') }}" method="POST" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group-field text-left">
+                                <label for="name" class="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-2">Display Name</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="far fa-user input-icon"></i>
+                                    <input type="text" id="name" name="name" placeholder="Enter display name" value="{{ name if name else '' }}">
+                                </div>
+                            </div>
+                            <div class="form-group-field text-left">
+                                <label for="email" class="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-2">Email Address</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="far fa-envelope input-icon"></i>
+                                    <input type="email" id="email" name="email" placeholder="Enter email address" value="{{ email }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-2 text-right">
+                            <button type="submit" class="btn btn-primary" style="background-color: #007bff; border-color: #007bff; color: #ffffff; font-weight: 500; font-size: 0.9rem; padding: 8px 20px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: background-color 0.2s;">
+                                Save Profile Changes <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Password settings card -->
+                <div class="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+                    <h4 class="text-base font-bold text-zinc-800 border-b border-zinc-150 pb-3 mb-4 flex items-center gap-2">
+                        <i class="fas fa-lock text-blue-500"></i> Change Password
+                    </h4>
+                    
+                    <form action="{{ url_for('change_password') }}" method="POST" class="space-y-4">
+                        <div class="form-group-field text-left">
+                            <label for="current_password" class="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-2">Current Password</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-key input-icon"></i>
+                                <input type="password" id="current_password" name="current_password" placeholder="Enter current password" required>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group-field text-left">
+                                <label for="new_password" class="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-2">New Password</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-lock input-icon"></i>
+                                    <input type="password" id="new_password" name="new_password" placeholder="••••••••" required>
+                                </div>
+                            </div>
+                            <div class="form-group-field text-left">
+                                <label for="confirm_password" class="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-2">Confirm New Password</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-shield-alt input-icon"></i>
+                                    <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-2 text-right">
+                            <button type="submit" class="btn btn-primary" style="background-color: #007bff; border-color: #007bff; color: #ffffff; font-weight: 500; font-size: 0.9rem; padding: 8px 20px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: background-color 0.2s;">
+                                Save New Password <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- =====================================================
+       CUSTOMER PROFILE VIEW (UNTOUCHED STOREFRONT LAYOUT)
+       ===================================================== -->
+    <div class="flex flex-col lg:flex-row gap-8 items-start">
+        
+        <!-- Left Column: User Info & Reset Password -->
+        <div class="w-full lg:w-80 flex-shrink-0 space-y-6">
+            <div class="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/80 shadow-2xl relative overflow-hidden text-center">
+                <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
+                <div class="relative space-y-6">
+                    <div class="relative w-24 h-24 mx-auto group">
+                        <div id="avatar-container" class="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-650 flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-purple-900/30 border-2 border-zinc-800 overflow-hidden cursor-pointer">
+                            {% if profile_pic %}
+                            <img src="{{ profile_pic }}" alt="Avatar" class="w-full h-full object-cover" id="avatar-image">
+                            {% else %}
+                            <span id="avatar-initials">{{ username[:2] | upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div onclick="triggerAvatarUpload()" class="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-[10px] text-white font-bold cursor-pointer border-2 border-purple-500">
+                            <i class="fas fa-camera text-lg mb-1"></i>
+                            Change
+                        </div>
+                        <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="handleAvatarFile(this)">
+                    </div>
+                    
+                    <div id="remove-avatar-btn-container-cust" class="{% if not profile_pic %}hidden{% endif %}" style="margin-top: 0.5rem;">
+                        <button type="button" onclick="deleteAvatar()" class="text-[11px] text-rose-400 hover:text-rose-350 hover:underline focus:outline-none cursor-pointer">
+                            <i class="fas fa-trash-alt mr-1"></i> Remove Photo
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <h2 class="text-xl font-extrabold text-white font-heading tracking-tight">{{ name if name else username }}</h2>
+                        <p class="text-xs text-slate-400 break-all">{{ email }}</p>
+                    </div>
+                    
+                    <div class="border-t border-zinc-800/60 pt-4 text-left space-y-3">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-semibold">Account Status</span>
+                            <span class="font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Active</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-semibold">Verification</span>
+                            <span class="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Verified</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-semibold">Member Since</span>
+                            <span class="font-bold text-slate-300">June 2026</span>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-zinc-800/60 pt-4">
+                        <a href="{{ url_for('logout') }}" class="w-full py-3 bg-rose-950/20 hover:bg-rose-900/40 border border-rose-800/60 hover:border-rose-500 text-rose-400 hover:text-rose-300 font-bold rounded-xl transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer shadow-md hover:scale-[1.02]">
+                            <i class="fas fa-sign-out-alt"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reset Password card for customers -->
+            <div class="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/80 shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
+                <div class="relative space-y-4">
+                    <h3 class="font-heading text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                        <i class="fas fa-lock text-purple-400"></i> Reset Password
+                    </h3>
+                    <p class="text-slate-450 text-[10px] leading-relaxed">Update your login credentials to secure your account.</p>
+                    
+                    <form action="{{ url_for('change_password') }}" method="POST" class="auth-form space-y-3.5">
+                        <div class="form-group-field text-left">
+                            <label for="current_password" class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Current Password</label>
+                            <div class="input-icon-wrapper mt-1">
+                                <i class="fas fa-key input-icon text-[10px]"></i>
+                                <input type="password" id="current_password" name="current_password" placeholder="••••••••" required class="text-xs py-1">
+                            </div>
+                        </div>
+                        <div class="form-group-field text-left">
+                            <label for="new_password" class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">New Password</label>
+                            <div class="input-icon-wrapper mt-1">
+                                <i class="fas fa-lock input-icon text-[10px]"></i>
+                                <input type="password" id="new_password" name="new_password" placeholder="••••••••" required class="text-xs py-1">
+                            </div>
+                        </div>
+                        <div class="form-group-field text-left">
+                            <label for="confirm_password" class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Confirm New Password</label>
+                            <div class="input-icon-wrapper mt-1">
+                                <i class="fas fa-shield-alt input-icon text-[10px]"></i>
+                                <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required class="text-xs py-1">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-auth-action w-full py-3 text-white text-xs font-bold cursor-pointer transition-all duration-300 hover:scale-[1.02] shadow-md flex items-center justify-center gap-1.5 mt-2">
+                            Update Password <i class="fas fa-save text-[10px]"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Purchase History -->
+        <div class="flex-grow w-full space-y-6">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <h3 class="font-heading text-2xl font-extrabold text-white flex items-center gap-2">
+                    <i class="fas fa-history text-purple-400"></i> Purchase History
+                </h3>
+                <span class="text-xs font-bold bg-zinc-800 text-slate-300 px-3 py-1 rounded-full border border-zinc-700/60">
+                    {{ orders | length }} Orders
+                </span>
+            </div>
+            
+            {% if not orders %}
+            <div class="bg-zinc-900/20 border border-zinc-800 rounded-3xl p-12 text-center space-y-6 shadow-xl">
+                <div class="w-16 h-16 rounded-2xl bg-zinc-800 border border-zinc-700/80 text-slate-500 flex items-center justify-center text-2xl mx-auto">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="space-y-1">
+                    <h4 class="text-white font-bold text-lg font-heading">No past purchases yet</h4>
+                    <p class="text-slate-400 text-sm max-w-sm mx-auto">Your purchase history is currently empty. Explore our catalog to place your first order!</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('products') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-650 hover:from-purple-600 hover:to-indigo-755 text-white font-bold rounded-xl transition-all shadow-lg shadow-purple-500/20 cursor-pointer">
+                        Start Shopping <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="space-y-6">
+                {% for order in orders %}
+                <div class="bg-zinc-900/40 border border-zinc-800 rounded-3xl overflow-hidden shadow-xl hover:border-purple-500/20 transition-all duration-300">
+                    <div class="bg-zinc-950/40 px-6 py-4 border-b border-zinc-800/80 flex flex-wrap items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Order ID</span>
+                            <span class="text-xs font-black text-purple-400 font-heading tracking-wide"><code>{{ order.order_id if order.order_id else 'N/A' }}</code></span>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Order Date</span>
+                            <span class="text-xs font-bold text-slate-300">{{ order.timestamp }}</span>
+                        </div>
+                        <div class="space-y-1 text-left sm:text-right">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Payment Method</span>
+                            <span class="text-xs font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 inline-flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+                                {{ order.payment_method if order.payment_method else 'Bakong KHQR - Paid' }}
+                            </span>
+                        </div>
+                        <div class="space-y-1 text-left sm:text-right">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Total Amount</span>
+                            <span class="text-sm font-black text-white font-heading">${{ "%.2f"|format(order.total_price) }}</span>
+                        </div>
+                    </div>
+                    <div class="p-6 divide-y divide-zinc-800/60 space-y-4">
+                        <div class="space-y-4 pb-4">
+                            {% for item in order['items'] %}
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 bg-white border border-zinc-800 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                                    <img src="{{ item.image }}" alt="{{ item.title }}" class="max-w-full max-h-full object-contain mix-blend-multiply">
+                                </div>
+                                <div class="flex-grow min-w-0">
+                                    <h4 class="text-white font-bold text-sm truncate" title="{{ item.title }}">{{ item.title }}</h4>
+                                    <p class="text-xs text-slate-400 mt-0.5">Qty: {{ item.quantity }} × ${{ "%.2f"|format(item.price) }}</p>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <span class="text-xs font-bold text-slate-300 font-heading">${{ "%.2f"|format(item.price * item.quantity) }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div class="space-y-1">
+                                <span class="text-slate-500 font-semibold block">Delivery Address</span>
+                                <p class="text-slate-300 leading-relaxed font-medium">{{ order.buyer_address }}</p>
+                            </div>
+                            <div class="space-y-2 font-medium">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Recipient Name:</span>
+                                    <span class="text-slate-300 font-bold">{{ order.buyer_name }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Phone Contact:</span>
+                                    <span class="text-slate-300 font-bold"><code>{{ order.buyer_phone }}</code></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- AJAX File Upload Logic -->
+<script>
+    // Safe toast notification wrapper
+    function notify(message, type = 'success') {
+        if (typeof showToast === 'function') {
+            showToast(message, type);
+            return;
+        }
+
+        const toast = document.createElement('div');
+        toast.style.position = 'fixed';
+        toast.style.top = '24px';
+        toast.style.right = '24px';
+        toast.style.padding = '12px 24px';
+        toast.style.borderRadius = '8px';
+        toast.style.color = '#ffffff';
+        toast.style.fontSize = '0.9rem';
+        toast.style.fontWeight = '600';
+        toast.style.zIndex = '99999';
+        toast.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+        toast.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        toast.style.fontFamily = 'sans-serif';
+        
+        if (type === 'success') {
+            toast.style.backgroundColor = '#10b981';
+        } else if (type === 'error') {
+            toast.style.backgroundColor = '#ef4444';
+        } else {
+            toast.style.backgroundColor = '#3b82f6';
+        }
+        
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-10px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    function triggerAvatarUpload() {
+        document.getElementById('avatar-input').click();
+    }
+
+    function handleAvatarFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            notify('Image size must be less than 2MB', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            const container = document.getElementById('avatar-container');
+            container.style.opacity = '0.5';
+
+            fetch('/api/upload_avatar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: base64Data })
+            })
+            .then(res => res.json())
+            .then(data => {
+                container.style.opacity = '1';
+                if (data.success) {
+                    let img = document.getElementById('avatar-image');
+                    if (!img) {
+                        img = document.createElement('img');
+                        img.id = 'avatar-image';
+                        img.className = 'w-full h-full object-cover';
+                        img.alt = 'Avatar';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    }
+                    img.src = base64Data;
+                    
+                    const headerAvatars = document.querySelectorAll('.user-avatar-circle img');
+                    headerAvatars.forEach(hImg => {
+                        hImg.src = base64Data;
+                    });
+                    
+                    const headerAvatarCircles = document.querySelectorAll('.user-avatar-circle');
+                    headerAvatarCircles.forEach(circle => {
+                        if (!circle.querySelector('img')) {
+                            circle.innerHTML = `<img src="${base64Data}" alt="Avatar" class="w-full h-full object-cover">`;
+                        }
+                    });
+
+                    // Update admin panel top navbar avatar image/initials
+                    const userMenu = document.getElementById('user-menu-toggle');
+                    if (userMenu) {
+                        const topbarInitials = userMenu.querySelector('.topbar-avatar-initials');
+                        if (topbarInitials) {
+                            topbarInitials.remove();
+                        }
+                        let topbarAvatar = userMenu.querySelector('.topbar-avatar');
+                        if (!topbarAvatar) {
+                            topbarAvatar = document.createElement('img');
+                            topbarAvatar.className = 'topbar-avatar';
+                            topbarAvatar.alt = 'Avatar';
+                            userMenu.insertBefore(topbarAvatar, userMenu.firstChild);
+                        }
+                        topbarAvatar.src = base64Data;
+                    }
+
+                    // Dynamically show the remove button
+                    const adminBtn = document.getElementById('remove-avatar-btn-container');
+                    if (adminBtn) adminBtn.classList.remove('hidden');
+                    
+                    const custBtn = document.getElementById('remove-avatar-btn-container-cust');
+                    if (custBtn) custBtn.classList.remove('hidden');
+
+                    notify('Profile picture updated successfully!', 'success');
+                } else {
+                    notify(data.message || 'Failed to update profile picture', 'error');
+                }
+            })
+            .catch(err => {
+                container.style.opacity = '1';
+                console.error('Avatar upload error:', err);
+                notify('Failed to connect to server', 'error');
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function deleteAvatar() {
+        if (!confirm("Are you sure you want to remove your profile picture?")) return;
+        
+        fetch('/api/delete_avatar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Revert avatar displays to initials fallback
+                const containers = document.querySelectorAll('#avatar-container');
+                containers.forEach(container => {
+                    const initials = "{{ username[:2] | upper }}";
+                    if (container.classList.contains('rounded-full')) {
+                        // Admin layout circle
+                        container.innerHTML = `<span id="avatar-initials" class="text-zinc-600 font-extrabold">${initials}</span>`;
+                    } else {
+                        // Customer layout card
+                        container.innerHTML = `<span id="avatar-initials">${initials}</span>`;
+                    }
+                });
+                
+                // Hide both remove buttons
+                const adminBtn = document.getElementById('remove-avatar-btn-container');
+                if (adminBtn) adminBtn.classList.add('hidden');
+                
+                const custBtn = document.getElementById('remove-avatar-btn-container-cust');
+                if (custBtn) custBtn.classList.add('hidden');
+                
+                // Reset top navigation menu avatars to initials fallback
+                const headerAvatars = document.querySelectorAll('.user-avatar-circle img');
+                headerAvatars.forEach(hImg => {
+                    hImg.remove();
+                });
+                const headerAvatarCircles = document.querySelectorAll('.user-avatar-circle');
+                headerAvatarCircles.forEach(circle => {
+                    circle.innerText = "{{ username[:2] | upper }}";
+                });
+                
+                // Reset admin panel top navbar avatar to initials fallback
+                const userMenu = document.getElementById('user-menu-toggle');
+                if (userMenu) {
+                    const topbarAvatar = userMenu.querySelector('.topbar-avatar');
+                    if (topbarAvatar) {
+                        topbarAvatar.remove();
+                    }
+                    const topbarInitials = userMenu.querySelector('.topbar-avatar-initials');
+                    if (!topbarInitials) {
+                        const initialsDiv = document.createElement('div');
+                        initialsDiv.className = 'topbar-avatar-initials';
+                        initialsDiv.innerText = "{{ username[:2] | upper }}";
+                        userMenu.insertBefore(initialsDiv, userMenu.firstChild);
+                    }
+                }
+                
+                notify('Profile picture removed successfully!', 'success');
+            } else {
+                notify(data.message || 'Failed to remove profile picture', 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Avatar delete error:', err);
+            notify('Failed to connect to server', 'error');
+        });
+    }
+</script>
+{% endblock %}

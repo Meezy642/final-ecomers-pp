@@ -1,0 +1,158 @@
+{% extends "customer/layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+    
+    <!-- Premium Header Section (Replaces old Banner) -->
+    <div class="text-center max-w-3xl mx-auto space-y-4 mb-8">
+        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm">
+            <i class="fas fa-info-circle"></i> About YSTAA SHOPP
+        </span>
+        <h1 class="text-4xl sm:text-5xl font-black text-white font-heading tracking-tight leading-none">
+            We Build The Future of <span class="text-purple-400 bg-gradient-to-r from-purple-400 to-indigo-500 bg-clip-text text-transparent">Shopping</span>
+        </h1>
+        <p class="text-slate-400 text-base sm:text-lg leading-relaxed">
+            Redefining curated lifestyle and premium shopping convenience with cyber-noir aesthetics and next-gen logistics.
+        </p>
+    </div>
+
+    <!-- Split Content Story Section -->
+    <section class="flex flex-col lg:flex-row gap-12 items-center">
+        <div class="flex-1 space-y-6">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white font-heading">Crafting Quality Experiences</h2>
+            <p class="text-slate-300 leading-relaxed text-sm sm:text-base">
+                Welcome to <strong>YSTAA SHOPP</strong>. We started with a simple belief: that premium quality, elegant style, and modern convenience should be accessible to everyone. We set out to break the barrier between high-end streetwear, premium tech, and everyday luxury.
+            </p>
+            <p class="text-slate-350 leading-relaxed text-sm">
+                Our collections are hand-picked from top designers and manufacturers worldwide, ensuring that every product we host isn't just an item, but a statement of luxury and high durability.
+            </p>
+        </div>
+        <div class="flex-1 w-full max-w-md lg:max-w-none relative">
+            <!-- Decorative glow behind image -->
+            <div class="absolute -inset-1 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl blur-lg opacity-15"></div>
+            <div class="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+                <img src="{{ url_for('static', filename='img/slide1.jpg') }}" alt="Our Atelier" class="w-full h-auto object-cover max-h-[350px] transform hover:scale-105 transition duration-500">
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Row -->
+    <section class="stats-card-row grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="stat-card p-6 rounded-2xl text-center space-y-2 border border-zinc-800 bg-zinc-900/20 shadow-md">
+            <span class="stat-card-number text-3xl font-black block">10k+</span>
+            <span class="stat-card-label text-sm font-semibold">Happy Buyers</span>
+        </div>
+        <div class="stat-card p-6 rounded-2xl text-center space-y-2 border border-zinc-800 bg-zinc-900/20 shadow-md">
+            <span class="stat-card-number text-3xl font-black block">500+</span>
+            <span class="stat-card-label text-sm font-semibold">Curated Items</span>
+        </div>
+        <div class="stat-card p-6 rounded-2xl text-center space-y-2 border border-zinc-800 bg-zinc-900/20 shadow-md">
+            <span class="stat-card-number text-3xl font-black block">24/7</span>
+            <span class="stat-card-label text-sm font-semibold">Customer Support</span>
+        </div>
+    </section>
+
+    <!-- Our Journey Timeline Section -->
+    <section class="space-y-10">
+        <div class="text-center">
+            <h3 class="font-heading text-2xl sm:text-3xl font-extrabold text-white">Our Journey</h3>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">Key milestones that shaped YSTAA SHOPP</p>
+        </div>
+        
+        <div class="relative border-l-2 border-zinc-800 ml-4 md:ml-32 space-y-12">
+            <!-- Milestone 1 -->
+            <div class="relative pl-8 md:pl-12">
+                <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-purple-500 border-4 shadow-md shadow-purple-500/50" style="border-color: var(--bg-darkest)"></div>
+                <div class="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-8">
+                    <span class="text-purple-400 font-black text-xl font-heading">2023</span>
+                    <div class="space-y-1">
+                        <h4 class="text-white font-bold text-base">The Foundation</h4>
+                        <p class="text-slate-400 text-xs sm:text-sm max-w-xl">YSTAA SHOPP was founded with a curated catalogue of 50 exclusive items and a mission to redefine digital retail.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Milestone 2 -->
+            <div class="relative pl-8 md:pl-12">
+                <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-purple-500 border-4 shadow-md shadow-purple-500/50" style="border-color: var(--bg-darkest)"></div>
+                <div class="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-8">
+                    <span class="text-purple-400 font-black text-xl font-heading">2024</span>
+                    <div class="space-y-1">
+                        <h4 class="text-white font-bold text-base">Reaching 10k Happy Buyers</h4>
+                        <p class="text-slate-400 text-xs sm:text-sm max-w-xl">Expanded our distribution channels and integrated global designer partnerships, achieving our first major user milestone.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Milestone 3 -->
+            <div class="relative pl-8 md:pl-12">
+                <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-purple-500 border-4 shadow-md shadow-purple-500/50" style="border-color: var(--bg-darkest)"></div>
+                <div class="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-8">
+                    <span class="text-purple-400 font-black text-xl font-heading">2026</span>
+                    <div class="space-y-1">
+                        <h4 class="text-white font-bold text-base">Next-Gen Rebranding & Re-launch</h4>
+                        <p class="text-slate-400 text-xs sm:text-sm max-w-xl">Overhauled our entire UX with a Cyber-Noir premium design system, real-time favorite triggers, and automated notification logistics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Grid -->
+    <section class="space-y-8">
+        <div class="text-center">
+            <h3 class="font-heading text-2xl sm:text-3xl font-extrabold text-white">Why Shop With Us?</h3>
+            <p class="text-slate-400 text-sm mt-1">We maintain the highest standards to ensure an unmatched shopping experience</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-zinc-900/40 p-8 rounded-2xl border border-zinc-800/80 shadow-md text-center space-y-4 hover:shadow-xl hover:border-purple-500/30 transition-all duration-300">
+                <div class="w-12 h-12 rounded-xl bg-purple-950/40 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl mx-auto shadow-md shadow-purple-500/5">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <h4 class="font-heading font-bold text-lg text-white">Premium Quality</h4>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    We carefully inspect and source each product category to meet high durability and craftsmanship criteria.
+                </p>
+            </div>
+            
+            <div class="bg-zinc-900/40 p-8 rounded-2xl border border-zinc-800/80 shadow-md text-center space-y-4 hover:shadow-xl hover:border-purple-500/30 transition-all duration-300">
+                <div class="w-12 h-12 rounded-xl bg-purple-950/40 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl mx-auto shadow-md shadow-purple-500/5">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h4 class="font-heading font-bold text-lg text-white">Ethical Sourcing</h4>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    We partner with eco-conscious suppliers and advocate for sustainable packaging to limit our carbon footprint.
+                </p>
+            </div>
+            
+            <div class="bg-zinc-900/40 p-8 rounded-2xl border border-zinc-800/80 shadow-md text-center space-y-4 hover:shadow-xl hover:border-purple-500/30 transition-all duration-300">
+                <div class="w-12 h-12 rounded-xl bg-purple-950/40 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl mx-auto shadow-md shadow-purple-500/5">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <h4 class="font-heading font-bold text-lg text-white">Swift Logistics</h4>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Our robust distribution channel guarantees packages are packed securely and delivered at your doorstep.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Call-To-Action (Shop Collection) -->
+    <section class="relative bg-gradient-to-br from-purple-900/35 to-indigo-900/35 border border-purple-500/15 rounded-3xl p-8 sm:p-12 text-center overflow-hidden shadow-xl">
+        <div class="absolute inset-0 bg-radial-gradient from-purple-500/15 via-transparent to-transparent pointer-events-none"></div>
+        <div class="relative max-w-2xl mx-auto space-y-6">
+            <h3 class="font-heading text-2xl sm:text-3xl font-extrabold text-white">Experience YSTAA SHOPP Today</h3>
+            <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Discover our curated selection of high-end accessories, premium tech, and modern collection fashion statements. Enjoy secure KHQR payments and next-generation delivery.
+            </p>
+            <div class="pt-2">
+                <a href="{{ url_for('products') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-650 hover:from-purple-600 hover:to-indigo-755 text-white font-bold rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-purple-500/25 cursor-pointer">
+                    Explore Our Catalog <i class="fas fa-shopping-bag text-sm"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

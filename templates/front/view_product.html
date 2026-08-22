@@ -1,0 +1,121 @@
+{% extends "customer/layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- Top Navigation -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- Back Button Component -->
+        <a href="{{ url_for('products') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-350 hover:text-white transition-colors bg-zinc-900 border border-zinc-800 px-4 py-2.5 rounded-xl shadow-sm w-fit hover:border-zinc-700 hover:shadow-purple-500/10 hover:shadow-md">
+            <i class="fas fa-arrow-left"></i> Back to Products
+        </a>
+
+        <!-- Breadcrumb navigation -->
+        <nav class="flex text-sm text-slate-400 font-medium whitespace-nowrap overflow-x-auto">
+            <a href="{{ url_for('home') }}" class="hover:text-purple-400 transition-colors">Home</a>
+            <span class="mx-2 text-slate-650">/</span>
+            <a href="{{ url_for('products', category=item.category) }}" class="capitalize hover:text-purple-400 transition-colors">{{ item.category }}</a>
+            <span class="mx-2 text-slate-650">/</span>
+            <span class="text-white font-bold truncate max-w-[150px] sm:max-w-xs">{{ item.title }}</span>
+        </nav>
+    </div>
+
+    <!-- Main Detail Row Split -->
+    <div class="flex flex-col lg:flex-row gap-10 xl:gap-16">
+        <!-- Product Image -->
+        <div class="w-full lg:w-1/2">
+            <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-8 sm:p-12 flex items-center justify-center min-h-[300px] sm:min-h-[450px] shadow-lg relative group overflow-hidden hover:border-purple-500/40 transition-colors duration-300">
+                <div class="bg-white p-6 rounded-xl flex items-center justify-center w-full h-full max-w-[320px] max-h-[320px] sm:max-w-[400px] sm:max-h-[400px] shadow-inner">
+                    <img src="{{ item.image }}" alt="{{ item.title }}" class="max-w-full h-auto max-h-[260px] sm:max-h-[300px] object-contain transform group-hover:scale-105 transition-transform duration-500 ease-out mix-blend-multiply">
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="w-full lg:w-1/2 flex flex-col justify-center">
+            <span class="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2">{{ item.category }}</span>
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4 font-heading">{{ item.title }}</h1>
+
+            <!-- Rating Row -->
+            <div class="flex items-center gap-4 mb-6">
+                <div class="flex items-center gap-1.5 bg-zinc-800 border border-zinc-700 px-3 py-1 rounded-full">
+                    <span class="text-amber-400 text-sm"><i class="fas fa-star"></i></span>
+                    <span class="text-amber-400 font-extrabold text-sm">{{ item.rating.rate }}</span>
+                </div>
+                <span class="text-sm font-medium text-slate-450">({{ item.rating.count }} verified reviews)</span>
+            </div>
+
+            <!-- Price -->
+            <div class="mb-8">
+                <span class="text-3xl sm:text-4xl font-black text-white font-heading">${{ "%.2f"|format(item.price) }}</span>
+            </div>
+
+            <div class="w-full h-px bg-zinc-800 mb-8"></div>
+
+            <!-- Description -->
+            <div class="prose prose-sm sm:prose-base text-slate-350 mb-10 max-w-none">
+                <h3 class="text-lg font-bold text-white mb-3 font-heading">Product Overview</h3>
+                <p class="leading-relaxed">{{ item.description }}</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col sm:flex-row items-center gap-4 mt-auto">
+                <form action="{{ url_for('add_to_cart', item_id=item.id) }}" method="POST" class="w-full sm:w-auto flex-1">
+                    <button type="submit" class="w-full flex items-center justify-center gap-3 btn-primary text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-md transform hover:-translate-y-0.5 cursor-pointer">
+                        <i class="fas fa-shopping-cart"></i> Add to Shopping Cart
+                    </button>
+                </form>
+                
+                <!-- Dynamic Wishlist Action Toggles -->
+                {% if in_wishlist %}
+                <form action="{{ url_for('remove_from_wishlist', item_id=item.id) }}" method="POST" class="w-full sm:w-auto flex-shrink-0">
+                    <button type="submit" class="w-full sm:w-auto flex-shrink-0 flex items-center justify-center bg-purple-950/20 border border-purple-800 text-purple-400 hover:bg-purple-900/30 py-4 px-4 sm:w-14 sm:h-14 sm:py-0 rounded-xl transition-all duration-300 shadow-sm cursor-pointer" title="Remove from Wishlist">
+                        <i class="fas fa-heart text-xl text-purple-500 mr-2 sm:mr-0"></i> <span class="sm:hidden font-semibold">Remove Favorite</span>
+                    </button>
+                </form>
+                {% else %}
+                <form action="{{ url_for('add_to_wishlist', item_id=item.id) }}" method="POST" class="w-full sm:w-auto flex-shrink-0">
+                    <button type="submit" class="w-full sm:w-auto flex-shrink-0 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 hover:bg-purple-950/20 hover:text-purple-400 text-slate-400 py-4 px-4 sm:w-14 sm:h-14 sm:py-0 rounded-xl transition-all duration-300 shadow-sm cursor-pointer" title="Add to Wishlist">
+                        <i class="far fa-heart text-xl mr-2 sm:mr-0"></i> <span class="sm:hidden font-semibold">Add to Favorites</span>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products Component Section -->
+    {% if related_products %}
+    <section class="pt-12 mt-12 border-t border-zinc-800">
+        <h2 class="text-2xl font-bold tracking-tight text-white mb-8 font-heading">You May Also Like</h2>
+
+        <!-- Product Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for rel in related_products %}
+            <div class="group flex flex-col bg-zinc-900/40 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-sm hover:shadow-xl hover:border-purple-500/50 transform hover:-translate-y-1 transition-all duration-300">
+
+                <div class="relative bg-zinc-950/20 aspect-square overflow-hidden w-full p-4 flex items-center justify-center border-b border-zinc-800/60">
+                    <a href="{{ url_for('view_product', item_id=rel.id) }}" class="block w-full h-full flex items-center justify-center">
+                        <img src="{{ rel.image }}" alt="{{ rel.title }}" class="max-w-full max-h-32 object-contain transform group-hover:scale-105 transition-transform duration-500 ease-in-out mix-blend-screen">
+                    </a>
+                </div>
+
+                <div class="p-4 flex-grow flex flex-col justify-between space-y-2">
+                    <h4 class="text-xs font-bold text-slate-200 line-clamp-2 group-hover:text-purple-400 transition-colors leading-snug">
+                        <a href="{{ url_for('view_product', item_id=rel.id) }}">{{ rel.title }}</a>
+                    </h4>
+                    <div class="flex items-center justify-between pt-2">
+                        <span class="text-base font-extrabold text-white">${{ "%.2f"|format(rel.price) }}</span>
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-amber-400 border border-zinc-700">
+                            ★ {{ rel.rating.rate }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}
