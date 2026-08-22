@@ -1,34 +1,65 @@
-{% extends "admin/master.html" if master_exists else "admin/layout.html" %}
+{% extends "admin/master.html" %}
 
 {% block title %}Delete User{% endblock %}
 {% block breadcrumb %}Delete User{% endblock %}
 {% block page_title %}Delete User Confirmation{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width: 600px; margin: 2rem auto; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); background: #ffffff; border: 1px solid #e2e8f0;">
-    <div class="card-header" style="padding: 1.25rem 1.5rem; background: #fef2f2; border-bottom: 1px solid #fee2e2; display: flex; align-items: center; gap: 12px;">
-        <div style="width: 40px; height: 40px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-            <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div>
-            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #991b1b;">Confirm Deletion</h3>
-            <p style="margin: 0; font-size: 0.8rem; color: #b91c1c;">This action cannot be undone.</p>
-        </div>
-    </div>
-    
-    <div class="card-body" style="padding: 1.75rem; text-align: center;">
-        <p style="font-size: 1rem; color: #334155; margin-bottom: 1.5rem;">
-            Are you sure you want to permanently delete user <strong>{{ user.username if user else 'this user' }}</strong>?
-        </p>
+<div style="max-width: 520px; margin: 2rem auto;">
+    <div class="card" style="border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #ffffff; border: 1px solid #fee2e2;">
         
-        <form method="POST" action="{{ url_for('admin.user_delete', id=user.id) if user else '#' }}" style="display: inline-flex; gap: 12px; justify-content: center;">
-            <a href="{{ url_for('admin.user_index') }}" class="btn btn-secondary" style="padding: 8px 20px; border-radius: 6px; background: #e2e8f0; color: #475569; font-weight: 600; text-decoration: none;">
-                Cancel
-            </a>
-            <button type="submit" class="btn btn-danger" style="padding: 8px 20px; border-radius: 6px; background: #ef4444; border-color: #ef4444; color: #fff; font-weight: 600;">
-                <i class="fas fa-trash-alt"></i> Confirm Delete
-            </button>
-        </form>
+        <!-- Red Accent Header -->
+        <div style="padding: 1.5rem; background: linear-gradient(135deg, #fef2f2, #fee2e2); border-bottom: 1px solid #fecaca; text-align: center;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: #ffffff; color: #ef4444; display: inline-flex; align-items: center; justify-content: center; font-size: 1.75rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); margin-bottom: 12px;">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            <h3 style="margin: 0 0 4px; font-size: 1.25rem; font-weight: 800; color: #991b1b;">Delete User Account?</h3>
+            <p style="margin: 0; font-size: 0.85rem; color: #b91c1c;">This action is permanent and cannot be undone.</p>
+        </div>
+
+        <div class="card-body" style="padding: 1.75rem;">
+            <!-- User Info Card -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 14px;">
+                {% set avatar = user.profile_image if user and user.profile_image != 'no-profile.png' else None %}
+                {% if avatar and not avatar.startswith('/') and not avatar.startswith('http') %}
+                    {% set avatar = '/static/uploads/' + avatar %}
+                {% endif %}
+                
+                {% if avatar %}
+                    <img src="{{ avatar }}" alt="{{ user.username }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #7c3aed;">
+                {% else %}
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; text-transform: uppercase;">
+                        {{ (user.username if user else 'US')[:2] }}
+                    </div>
+                {% endif %}
+
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 700; color: #0f172a; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ user.name or (user.username if user else 'Unknown User') }}
+                    </div>
+                    <div style="font-size: 0.82rem; color: #7c3aed; font-weight: 500;">
+                        @{{ user.username if user else 'user' }}
+                    </div>
+                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                        {{ user.email if user else '' }}
+                    </div>
+                </div>
+
+                <div style="background: #e2e8f0; color: #475569; font-weight: 700; font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;">
+                    ID: #{{ user.id if user else '' }}
+                </div>
+            </div>
+
+            <!-- Confirmation Action Form -->
+            <form method="POST" action="{{ url_for('admin.user_delete', id=user.id) if user else '#' }}" style="display: flex; gap: 12px; justify-content: center; margin: 0;">
+                <a href="{{ url_for('admin.user_index') }}" class="btn" style="flex: 1; padding: 11px 18px; border-radius: 10px; background: #f1f5f9; color: #475569; font-weight: 600; font-size: 0.92rem; text-decoration: none; text-align: center; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center;">
+                    Cancel
+                </a>
+                <button type="submit" class="btn" style="flex: 1; padding: 11px 18px; border-radius: 10px; background: #ef4444; color: #ffffff; font-weight: 700; font-size: 0.92rem; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <i class="fas fa-trash-alt"></i> Confirm Delete
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

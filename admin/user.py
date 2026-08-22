@@ -147,20 +147,7 @@ def user_delete(id):
         flash("User not found.", "danger")
         return redirect(url_for("admin.user_index"))
 
-    if session.get("username") == user.username:
-        flash("You cannot delete your own account.", "danger")
-        return redirect(url_for("admin.user_index"))
-
     if request.method == "POST":
-        upload_folder = current_app.config.get("UPLOAD_FOLDER")
-        if user.profile_image and user.profile_image != "no-profile.png":
-            try:
-                p = os.path.join(upload_folder, user.profile_image)
-                if os.path.exists(p):
-                    os.remove(p)
-            except Exception:
-                pass
-
         db.session.delete(user)
         db.session.commit()
 
