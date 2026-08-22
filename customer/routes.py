@@ -193,7 +193,7 @@ def login():
 
         user = User.query.filter((User.username == username_or_email) | (User.email == username_or_email)).first()
 
-        if user and user.password == password:
+        if user and user.check_password(password):
             session['username'] = user.username
             flash(f"Welcome back, {user.username}!", "success")
             
@@ -230,7 +230,8 @@ def register():
             flash("Email already registered.", "error")
             return redirect(url_for('customer.register'))
 
-        new_user = User(username=username, email=email, password=password, role='customer', name=username)
+        new_user = User(username=username, email=email, role='customer', name=username)
+        new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
 
@@ -682,11 +683,11 @@ def change_password():
         return redirect(url_for('customer.profile'))
         
     user = User.query.filter_by(username=username).first()
-    if not user or user.password != current_password:
+    if not user or not user.check_password(current_password):
         flash("Incorrect current password.", "error")
         return redirect(url_for('customer.profile'))
         
-    user.password = new_password
+    user.set_password(new_password)
     db.session.commit()
     
     flash("Your password has been updated successfully.", "success")
@@ -744,7 +745,7 @@ def reset_password(token):
             
         user = User.query.filter_by(username=username).first()
         if user:
-            user.password = new_password
+            user.set_password(new_password)
             db.session.commit()
             flash("Your password has been reset successfully. Please log in with your new password.", "success")
             return redirect(url_for('customer.login'))

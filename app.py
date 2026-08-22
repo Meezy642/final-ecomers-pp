@@ -181,11 +181,11 @@ with app.app_context():
                         new_u = User(
                             username=u_name,
                             email=u_info.get('email', f"{u_name}@localhost.com"),
-                            password=u_info.get('password', '123456'),
                             role=u_info.get('role', 'customer'),
                             name=u_info.get('name', u_name),
                             profile_image=u_info.get('profile_pic') or 'no-profile.png'
                         )
+                        new_u.set_password(u_info.get('password', '123456'))
                         db.session.add(new_u)
                     db.session.commit()
             except Exception as e:
@@ -196,11 +196,11 @@ with app.app_context():
         admin_user = User(
             username='admin',
             email='admin@localhost.com',
-            password='admin',
             role='admin',
             name='Administrator',
             profile_image='no-profile.png'
         )
+        admin_user.set_password('admin')
         db.session.add(admin_user)
         db.session.commit()
         print("Default admin user created (admin / admin).")

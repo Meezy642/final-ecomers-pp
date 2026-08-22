@@ -61,12 +61,12 @@ def add_user():
         new_user = User(
             username=username,
             email=email,
-            password=password,
             phone_number=phone_number,
             role=role,
             name=name,
             profile_image=filename
         )
+        new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
         flash(f"User '{username}' created successfully!", "success")
@@ -77,6 +77,7 @@ def add_user():
 @user_bp.route('/users/edit/<username>', methods=['GET', 'POST'], endpoint='edit_user')
 @user_bp.route('/user/edit/<username>', methods=['GET', 'POST'], endpoint='admin_edit_user')
 @user_bp.route('/users/edit/id/<int:user_id>', methods=['GET', 'POST'], endpoint='edit_user_by_id')
+@user_bp.route('/user/edit/<int:user_id>', methods=['GET', 'POST'], endpoint='admin_edit_user_by_id')
 @admin_required
 def edit_user(username=None, user_id=None):
     user = None
@@ -126,7 +127,7 @@ def edit_user(username=None, user_id=None):
         if name:
             user.name = name
         if password:
-            user.password = password
+            user.set_password(password)
 
         try:
             profile_file = request.files.get('profile')
