@@ -157,7 +157,7 @@
                         <td>{{ info.email }}</td>
                         <td><span class="badge badge-{{ 'danger' if info.get('role') == 'admin' else 'secondary' }}">{{ info.get('role', 'customer') }}</span></td>
                         <td>
-                            <a href="{{ url_for('admin_edit_user', username=username) }}" class="btn btn-xs btn-info"><i class="fas fa-edit"></i></a>
+                            <a href="{{ url_for('admin_user.edit_user', user_id=info.id) }}" class="btn btn-xs btn-info"><i class="fas fa-edit"></i></a>
                         </td>
                     </tr>
                     {% endfor %}

@@ -109,10 +109,10 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 {% endif %}
-                                <a href="{{ url_for('admin_edit_user', username=username) }}" class="btn btn-sm btn-info" style="background: #3b82f6; border-color: #3b82f6; color: #fff; font-weight: 600; border-radius: 6px; padding: 6px 12px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;" title="Edit Profile">
+                                <a href="{{ url_for('admin_user.edit_user', user_id=info.id) }}" class="btn btn-sm btn-info" style="background: #3b82f6; border-color: #3b82f6; color: #fff; font-weight: 600; border-radius: 6px; padding: 6px 12px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;" title="Edit Profile">
                                     <i class="fas fa-user-edit"></i> Edit
                                 </a>
-                                <form action="{{ url_for('admin_delete_user', username=username) }}" method="POST" class="inline-form" style="margin: 0; display: inline;" onsubmit="return confirm('Are you sure you want to delete user: {{ username }}?')">
+                                <form action="{{ url_for('admin_user.delete_user', user_id=info.id) }}" method="POST" class="inline-form" style="margin: 0; display: inline;" onsubmit="return confirm('Are you sure you want to delete user: {{ username }}?')">
                                     <button type="submit" class="btn btn-sm btn-danger" style="background: #ef4444; border-color: #ef4444; color: #fff; font-weight: 600; border-radius: 6px; padding: 6px 12px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;" title="Delete User">
                                         <i class="fas fa-trash-alt"></i> Delete
                                     </button>

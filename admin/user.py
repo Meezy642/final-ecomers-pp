@@ -16,7 +16,8 @@ def admin_users():
     users = {u.username: u.to_dict() for u in user_records}
     return render_template('admin/users.html', users=users)
 
-@user_bp.route('/users/<int:user_id>')
+@user_bp.route('/users/<int:user_id>', endpoint='user_details')
+@user_bp.route('/user/<int:user_id>', endpoint='user_details_alt')
 @admin_required
 def user_details(user_id):
     user = User.query.get(user_id)
@@ -75,16 +76,16 @@ def add_user():
 
     return render_template('admin/user_form.html', edit_mode=False)
 
-@user_bp.route('/users/edit/<username>', methods=['GET', 'POST'], endpoint='edit_user')
-@user_bp.route('/user/edit/<username>', methods=['GET', 'POST'], endpoint='admin_edit_user')
-@user_bp.route('/users/edit/id/<int:user_id>', methods=['GET', 'POST'], endpoint='edit_user_by_id')
-@user_bp.route('/user/edit/<int:user_id>', methods=['GET', 'POST'], endpoint='admin_edit_user_by_id')
+@user_bp.route('/user/edit/<int:user_id>', methods=['GET', 'POST'], endpoint='edit_user')
+@user_bp.route('/users/edit/<int:user_id>', methods=['GET', 'POST'], endpoint='admin_edit_user')
+@user_bp.route('/user/edit/<username>', methods=['GET', 'POST'], endpoint='edit_user_by_name')
+@user_bp.route('/users/edit/<username>', methods=['GET', 'POST'], endpoint='admin_edit_user_by_name')
 @admin_required
-def edit_user(username=None, user_id=None):
+def edit_user(user_id=None, username=None):
     user = None
-    if user_id:
+    if user_id is not None:
         user = User.query.get(user_id)
-    elif username:
+    elif username is not None:
         if str(username).isdigit():
             user = User.query.get(int(username))
         if not user:
@@ -105,20 +106,20 @@ def edit_user(username=None, user_id=None):
         if new_username and new_username != user.username:
             if User.query.filter(User.username == new_username, User.id != user.id).first():
                 flash(f"Username '{new_username}' is already taken.", "danger")
-                return redirect(url_for('admin_user.admin_edit_user', username=user.username))
+                return redirect(url_for('admin_user.edit_user', user_id=user.id))
             user.username = new_username
 
         if email and email != user.email:
             if User.query.filter(User.email == email, User.id != user.id).first():
                 flash(f"Email '{email}' is already registered.", "danger")
-                return redirect(url_for('admin_user.admin_edit_user', username=user.username))
+                return redirect(url_for('admin_user.edit_user', user_id=user.id))
             user.email = email
 
         if phone_number:
             existing_phone = User.query.filter(User.phone_number == phone_number, User.id != user.id).first()
             if existing_phone:
                 flash(f"Phone number '{phone_number}' is already registered to user @{existing_phone.username}.", "danger")
-                return redirect(url_for('admin_user.admin_edit_user', username=user.username))
+                return redirect(url_for('admin_user.edit_user', user_id=user.id))
             user.phone_number = phone_number
         elif phone_number == '':
             user.phone_number = ''
@@ -157,15 +158,16 @@ def edit_user(username=None, user_id=None):
         user_data=user.to_dict()
     )
 
-@user_bp.route('/users/delete/<username>', methods=['POST'], endpoint='delete_user')
-@user_bp.route('/user/delete/<username>', methods=['POST'], endpoint='admin_delete_user')
-@user_bp.route('/users/delete/id/<int:user_id>', methods=['POST'], endpoint='delete_user_by_id')
+@user_bp.route('/user/delete/<int:user_id>', methods=['POST'], endpoint='delete_user')
+@user_bp.route('/users/delete/<int:user_id>', methods=['POST'], endpoint='admin_delete_user')
+@user_bp.route('/user/delete/<username>', methods=['POST'], endpoint='delete_user_by_name')
+@user_bp.route('/users/delete/<username>', methods=['POST'], endpoint='admin_delete_user_by_name')
 @admin_required
-def delete_user(username=None, user_id=None):
+def delete_user(user_id=None, username=None):
     user = None
-    if user_id:
+    if user_id is not None:
         user = User.query.get(user_id)
-    elif username:
+    elif username is not None:
         if str(username).isdigit():
             user = User.query.get(int(username))
         if not user:
