@@ -613,20 +613,36 @@ def change_profile():
     username = session['username']
     name = request.form.get('name', '').strip()
     email = request.form.get('email', '').strip()
+    phone_number = request.form.get('phone_number', '').strip()
     
     if not email:
         flash("Email is required.", "error")
         return redirect(url_for('customer.profile'))
         
     user = User.query.filter_by(username=username).first()
-    if user:
-        user.name = name
-        user.email = email
-        db.session.commit()
-        flash("Profile updated successfully.", "success")
-    else:
+    if not user:
         flash("User not found.", "error")
-        
+        return redirect(url_for('customer.profile'))
+
+    # Check for duplicate email across other accounts
+    if email != user.email:
+        if User.query.filter(User.email == email, User.id != user.id).first():
+            flash(f"Email '{email}' is already registered to another account.", "error")
+            return redirect(url_for('customer.profile'))
+        user.email = email
+
+    # Check for duplicate phone across other accounts
+    if phone_number and phone_number != user.phone_number:
+        if User.query.filter(User.phone_number == phone_number, User.id != user.id).first():
+            flash(f"Phone number '{phone_number}' is already registered to another account.", "error")
+            return redirect(url_for('customer.profile'))
+        user.phone_number = phone_number
+
+    if name:
+        user.name = name
+
+    db.session.commit()
+    flash("Profile updated successfully.", "success")
     return redirect(url_for('customer.profile'))
 
 @customer_bp.route('/api/upload_avatar', methods=['POST'])

@@ -43,17 +43,17 @@ def add_user():
             return redirect(url_for('admin_user.add_user'))
 
         if User.query.filter_by(username=username).first():
-            flash(f"Username '{username}' already exists.", "danger")
+            flash(f"Username '{username}' already exists. Please choose a different username.", "danger")
             return redirect(url_for('admin_user.add_user'))
 
         if User.query.filter_by(email=email).first():
-            flash(f"Email '{email}' is already registered.", "danger")
+            flash(f"Email '{email}' is already registered. Cannot add the same email.", "danger")
             return redirect(url_for('admin_user.add_user'))
 
         if phone_number:
             existing_phone_user = User.query.filter_by(phone_number=phone_number).first()
             if existing_phone_user:
-                flash(f"Phone number '{phone_number}' is already registered to user @{existing_phone_user.username}.", "danger")
+                flash(f"Phone number '{phone_number}' is already registered to user @{existing_phone_user.username}. Cannot add the same phone number.", "danger")
                 return redirect(url_for('admin_user.add_user'))
 
         profile_file = request.files.get('profile')
@@ -111,14 +111,14 @@ def edit_user(user_id=None, username=None):
 
         if email and email != user.email:
             if User.query.filter(User.email == email, User.id != user.id).first():
-                flash(f"Email '{email}' is already registered.", "danger")
+                flash(f"Email '{email}' is already registered. Cannot use the same email.", "danger")
                 return redirect(url_for('admin_user.edit_user', user_id=user.id))
             user.email = email
 
         if phone_number:
             existing_phone = User.query.filter(User.phone_number == phone_number, User.id != user.id).first()
             if existing_phone:
-                flash(f"Phone number '{phone_number}' is already registered to user @{existing_phone.username}.", "danger")
+                flash(f"Phone number '{phone_number}' is already registered to user @{existing_phone.username}. Cannot use the same phone number.", "danger")
                 return redirect(url_for('admin_user.edit_user', user_id=user.id))
             user.phone_number = phone_number
         elif phone_number == '':
