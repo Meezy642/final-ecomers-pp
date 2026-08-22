@@ -117,7 +117,7 @@
                     <img src="{{ logged_in_user_pic }}" alt="Avatar" class="topbar-avatar">
                     {% else %}
                     <div class="topbar-avatar-initials">
-                        {{ (logged_in_user_display_name if logged_in_user_display_name else logged_in_user)[:2] | upper }}
+                        {{ (logged_in_user_display_name or logged_in_user or 'AD')[:2] | upper }}
                     </div>
                     {% endif %}
                     <span class="topbar-username">{{ logged_in_user_display_name if logged_in_user_display_name else 'Alexander Pierce' }}</span>

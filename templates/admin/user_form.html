@@ -25,7 +25,7 @@
             <!-- Avatar Upload Section with Preview -->
             {% set avatar_src = (user.profile_image if user else user_data.profile_image) if edit_mode else '' %}
             {% if avatar_src and not avatar_src.startswith('/') and not avatar_src.startswith('http') and not avatar_src.startswith('data:') and avatar_src != 'no-profile.png' %}
-                {% set avatar_src = '/static/admin/uploads/' + avatar_src %}
+                {% set avatar_src = '/static/uploads/' + avatar_src %}
             {% endif %}
 
             <div style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(139, 92, 246, 0.4); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 20px;">

@@ -13,7 +13,7 @@
         <div style="background: linear-gradient(135deg, #7c3aed, #4f46e5); padding: 2.5rem 2rem; position: relative; display: flex; align-items: center; gap: 24px;">
             {% set avatar_src = user.profile_image %}
             {% if avatar_src and not avatar_src.startswith('/') and not avatar_src.startswith('http') and not avatar_src.startswith('data:') and avatar_src != 'no-profile.png' %}
-                {% set avatar_src = '/static/admin/uploads/' + avatar_src %}
+                {% set avatar_src = '/static/uploads/' + avatar_src %}
             {% endif %}
 
             {% if avatar_src and avatar_src != 'no-profile.png' %}

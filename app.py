@@ -159,7 +159,7 @@ def inject_global_template_vars():
                 logged_in_user_role = user.role
                 pic = user.profile_image if user.profile_image and user.profile_image != 'no-profile.png' else ''
                 if pic and not pic.startswith('/') and not pic.startswith('http') and not pic.startswith('data:'):
-                    pic = f"/static/admin/uploads/{pic}"
+                    pic = f"/static/uploads/{pic}"
                 logged_in_user_pic = pic
                 logged_in_user_display_name = user.name or user.username
         except Exception:

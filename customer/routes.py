@@ -585,7 +585,7 @@ def profile():
     email = user.email or 'N/A'
     profile_pic = user.profile_image if user.profile_image and user.profile_image != 'no-profile.png' else ''
     if profile_pic and not profile_pic.startswith('/') and not profile_pic.startswith('http') and not profile_pic.startswith('data:'):
-        profile_pic = f"/static/admin/uploads/{profile_pic}"
+        profile_pic = f"/static/uploads/{profile_pic}"
         
     role = user.role or 'customer'
     name = user.name or username
