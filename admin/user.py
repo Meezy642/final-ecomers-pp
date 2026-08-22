@@ -40,9 +40,19 @@ def add_user():
             flash("Username, email, and password are required.", "danger")
             return redirect(url_for('admin_user.add_user'))
 
-        if User.query.filter((User.username == username) | (User.email == email)).first():
-            flash("Username or Email already exists.", "danger")
+        if User.query.filter_by(username=username).first():
+            flash(f"Username '{username}' already exists.", "danger")
             return redirect(url_for('admin_user.add_user'))
+
+        if User.query.filter_by(email=email).first():
+            flash(f"Email '{email}' is already registered.", "danger")
+            return redirect(url_for('admin_user.add_user'))
+
+        if phone_number:
+            existing_phone_user = User.query.filter_by(phone_number=phone_number).first()
+            if existing_phone_user:
+                flash(f"Phone number '{phone_number}' is already registered to user @{existing_phone_user.username}.", "danger")
+                return redirect(url_for('admin_user.add_user'))
 
         profile_file = request.files.get('profile')
         upload_folder = current_app.config.get('UPLOAD_FOLDER')
@@ -90,12 +100,27 @@ def edit_user(username=None, user_id=None):
         password = request.form.get('password', '')
         name = request.form.get('name', '').strip()
 
-        if new_username:
+        if new_username and new_username != user.username:
+            if User.query.filter(User.username == new_username, User.id != user.id).first():
+                flash(f"Username '{new_username}' is already taken.", "danger")
+                return redirect(url_for('admin_user.admin_edit_user', username=user.username))
             user.username = new_username
-        if email:
+
+        if email and email != user.email:
+            if User.query.filter(User.email == email, User.id != user.id).first():
+                flash(f"Email '{email}' is already registered.", "danger")
+                return redirect(url_for('admin_user.admin_edit_user', username=user.username))
             user.email = email
-        if phone_number is not None:
+
+        if phone_number:
+            existing_phone = User.query.filter(User.phone_number == phone_number, User.id != user.id).first()
+            if existing_phone:
+                flash(f"Phone number '{phone_number}' is already registered to user @{existing_phone.username}.", "danger")
+                return redirect(url_for('admin_user.admin_edit_user', username=user.username))
             user.phone_number = phone_number
+        elif phone_number == '':
+            user.phone_number = ''
+
         if role:
             user.role = role
         if name:
