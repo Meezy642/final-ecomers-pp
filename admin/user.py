@@ -12,11 +12,11 @@ user_bp = admin_bp
 
 # </admin/user>
 @admin_bp.route("/user")
-@admin_bp.route("/users")
 def user_index():
-    sql = text("SELECT * FROM users WHERE role != 'admin' AND username != 'admin' ORDER BY id ASC")
+    sql = text("SELECT * FROM user")
     result = db.session.execute(sql)
     users = result.mappings().all()
+
     return render_template("admin/user/index.html", users=users)
 
 # </admin/user/create>
