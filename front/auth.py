@@ -6,6 +6,13 @@ from . import front_bp
 # </front/login>
 @front_bp.route("/login", methods=["GET", "POST"])
 def login():
+    # If user is already logged in, redirect them directly
+    if "username" in session:
+        logged_in_user = User.query.filter_by(username=session["username"]).first()
+        if logged_in_user and logged_in_user.role == "admin":
+            return redirect(url_for("admin.user_index"))
+        return redirect(url_for("front.home"))
+
     if request.method == "POST":
         username_or_email = request.form.get("username", "").strip()
         password = request.form.get("password", "")
@@ -29,6 +36,13 @@ def login():
 # </front/register>
 @front_bp.route("/register", methods=["GET", "POST"])
 def register():
+    # If user is already logged in, redirect them directly
+    if "username" in session:
+        logged_in_user = User.query.filter_by(username=session["username"]).first()
+        if logged_in_user and logged_in_user.role == "admin":
+            return redirect(url_for("admin.user_index"))
+        return redirect(url_for("front.home"))
+
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()

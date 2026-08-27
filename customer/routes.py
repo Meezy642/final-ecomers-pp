@@ -187,6 +187,13 @@ def about():
 
 @customer_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    # If user is already logged in, redirect them directly
+    if 'username' in session:
+        logged_in_user = User.query.filter_by(username=session['username']).first()
+        if logged_in_user and logged_in_user.role == 'admin':
+            return redirect(url_for('admin.user_index'))
+        return redirect(url_for('customer.home'))
+
     if request.method == 'POST':
         username_or_email = request.form.get('username', '').strip()
         password = request.form.get('password', '')
@@ -198,7 +205,7 @@ def login():
             flash(f"Welcome back, {user.username}!", "success")
             
             if user.role == 'admin':
-                return redirect(url_for('admin_dashboard.admin_dashboard'))
+                return redirect(url_for('admin.user_index'))
             return redirect(url_for('customer.home'))
         else:
             flash("Invalid username/email or password.", "error")
@@ -208,6 +215,13 @@ def login():
 
 @customer_bp.route('/register', methods=['GET', 'POST'])
 def register():
+    # If user is already logged in, redirect them directly
+    if 'username' in session:
+        logged_in_user = User.query.filter_by(username=session['username']).first()
+        if logged_in_user and logged_in_user.role == 'admin':
+            return redirect(url_for('admin.user_index'))
+        return redirect(url_for('customer.home'))
+
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
