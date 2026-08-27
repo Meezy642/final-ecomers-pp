@@ -300,13 +300,13 @@ def admin_login():
             flash(f"Welcome back, {user.name or user.role}!", "success")
             return redirect(request.args.get('next') or url_for('admin_dashboard.admin_dashboard'))
 
-        # 2. Check instructor superadmin fallback credentials
-        elif identity == 'admin@pspstore.com' and password == 'admin123':
+        # 2. Check superadmin fallback credentials
+        elif identity in ['admin@store.com', 'admin@pspstore.com', 'kry lyheng', 'admin'] and password in ['admin123', 'admin']:
             session.clear()
             session.permanent = bool(request.form.get('remember_me') or request.form.get('remember'))
             session['user_id'] = 9999
-            session['username'] = 'Sophea Preab'
-            session['user_email'] = 'admin@pspstore.com'
+            session['username'] = 'Kry Lyheng'
+            session['user_email'] = 'admin@store.com'
             session['user_role'] = 'Super Administrator'
             flash("Welcome back, Super Administrator!", "success")
             return redirect(request.args.get('next') or url_for('admin_dashboard.admin_dashboard'))
