@@ -13,7 +13,7 @@ def require_admin_login():
 
 @admin_bp.route('/')
 def admin_root():
-    return redirect(url_for('admin.user_index'))
+    return redirect(url_for('admin_dashboard.admin_dashboard'))
 
 from admin import user
 from admin.dashboard import dashboard_bp

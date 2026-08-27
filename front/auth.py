@@ -9,8 +9,10 @@ def login():
     # If user is already logged in, redirect them directly
     if "username" in session:
         logged_in_user = User.query.filter_by(username=session["username"]).first()
-        if logged_in_user and logged_in_user.role == "admin":
-            return redirect(url_for("admin.user_index"))
+        if logged_in_user and logged_in_user.role in ["admin", "staff"]:
+            return redirect(url_for("admin_dashboard.admin_dashboard"))
+        elif session.get("user_role") in ["admin", "staff", "Super Administrator"]:
+            return redirect(url_for("admin_dashboard.admin_dashboard"))
         return redirect(url_for("front.home"))
 
     if request.method == "POST":
@@ -23,9 +25,10 @@ def login():
 
         if user and user.check_password(password):
             session["username"] = user.username
-            flash(f"Welcome back, {user.username}!", "success")
-            if user.role == "admin":
-                return redirect(url_for("admin.user_index"))
+            session["user_role"] = user.role
+            flash(f"Welcome back, {user.name or user.username}!", "success")
+            if user.role in ["admin", "staff"]:
+                return redirect(url_for("admin_dashboard.admin_dashboard"))
             return redirect(url_for("front.home"))
 
         flash("Invalid username/email or password.", "error")
@@ -39,8 +42,10 @@ def register():
     # If user is already logged in, redirect them directly
     if "username" in session:
         logged_in_user = User.query.filter_by(username=session["username"]).first()
-        if logged_in_user and logged_in_user.role == "admin":
-            return redirect(url_for("admin.user_index"))
+        if logged_in_user and logged_in_user.role in ["admin", "staff"]:
+            return redirect(url_for("admin_dashboard.admin_dashboard"))
+        elif session.get("user_role") in ["admin", "staff", "Super Administrator"]:
+            return redirect(url_for("admin_dashboard.admin_dashboard"))
         return redirect(url_for("front.home"))
 
     if request.method == "POST":
