@@ -109,7 +109,8 @@
 
         <!-- Fully Responsive Grid Layout -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {% for itm in item %}
+            {% set product_list = item if item is defined and item else (products if products is defined and products else []) %}
+            {% for itm in product_list %}
             <div class="group flex flex-col bg-zinc-900/40 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-sm hover:shadow-xl hover:border-purple-500/50 transform hover:-translate-y-1 transition-all duration-300">
 
                 <!-- Product Image Window -->

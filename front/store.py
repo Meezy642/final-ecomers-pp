@@ -9,10 +9,12 @@ from . import front_bp
 
 @front_bp.route("/")
 def home():
-    featured_products = Product.query.limit(8).all()
-    if not featured_products:
-        featured_products = items[:8]
-    return render_template("customer/index.html", products=featured_products)
+    prods = Product.query.order_by(Product.id.asc()).all()
+    if prods:
+        product_list = [p.to_dict() for p in prods]
+    else:
+        product_list = items
+    return render_template("customer/index.html", item=product_list, products=product_list)
 
 @front_bp.route("/products")
 def products():
@@ -25,16 +27,20 @@ def products():
     if search_query:
         query = query.filter(Product.title.ilike(f"%{search_query}%"))
 
-    product_list = query.all()
-    if not product_list:
+    prods = query.all()
+    if prods:
+        product_list = [p.to_dict() for p in prods]
+    else:
         product_list = items
         if category and category != "all":
             product_list = [p for p in product_list if p.get("category") == category]
         if search_query:
             product_list = [p for p in product_list if search_query.lower() in p.get("title", "").lower()]
 
-    categories = list(set([p.category if hasattr(p, "category") else p.get("category", "") for p in items]))
-    return render_template("customer/products.html", products=product_list, categories=categories, current_category=category)
+    categories = [c[0] for c in db.session.query(Product.category).distinct().all() if c[0]]
+    if not categories:
+        categories = list(set([p.get("category", "") for p in items]))
+    return render_template("customer/products.html", item=product_list, products=product_list, categories=categories, current_category=category)
 
 @front_bp.route("/product/<int:item_id>")
 def product_detail(item_id):
