@@ -113,12 +113,10 @@
                     <i class="far fa-sun"></i>
                 </div>
                 <div class="topbar-user-menu" id="user-menu-toggle">
-                    {% if logged_in_user_pic %}
-                    <img src="{{ logged_in_user_pic }}" alt="Avatar" class="topbar-avatar">
+                    {% if logged_in_user_pic and 'no-profile' not in logged_in_user_pic %}
+                    <img src="{{ logged_in_user_pic }}" alt="Avatar" class="topbar-avatar" onerror="this.onerror=null; this.src='/static/img/default-avatar.svg';">
                     {% else %}
-                    <div class="topbar-avatar-initials">
-                        {{ (logged_in_user_display_name or logged_in_user or 'AD')[:2] | upper }}
-                    </div>
+                    <img src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="Avatar" class="topbar-avatar" style="background: #ffffff; border: 1px solid #e2e8f0;">
                     {% endif %}
                     <span class="topbar-username">{{ logged_in_user_display_name if logged_in_user_display_name else 'Alexander Pierce' }}</span>
                     <div class="user-dropdown" id="user-dropdown">

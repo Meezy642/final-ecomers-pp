@@ -50,14 +50,13 @@
                         
                         <!-- Avatar Column -->
                         <td style="padding: 14px;">
-                            {% if avatar_src and avatar_src != 'no-profile.png' %}
+                            {% if avatar_src and avatar_src != 'no-profile.png' and 'no-profile' not in avatar_src %}
                                 <img src="{{ avatar_src }}" alt="{{ username }}" 
                                      style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #7c3aed; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
-                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ username }}&background=7c3aed&color=fff';">
+                                     onerror="this.onerror=null; this.src='/static/img/default-avatar.svg';">
                             {% else %}
-                                <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
-                                    {{ (username or 'US')[:2] }}
-                                </div>
+                                <img src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="{{ username }}" 
+                                     style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
                             {% endif %}
                         </td>
 
