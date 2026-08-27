@@ -277,5 +277,52 @@ with app.app_context():
         except Exception as e:
             print(f"Error seeding contacts: {e}")
 
+# --- ADMIN PORTAL AUTHENTICATION ---
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if session.get('username') and session.get('user_role') in ['admin', 'Super Administrator']:
+        return redirect(request.args.get('next') or url_for('admin_dashboard.admin_dashboard'))
+
+    if request.method == 'POST':
+        identity = request.form.get('identity') or request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        # 1. Check database user
+        user = User.query.filter((User.username == identity) | (User.email == identity)).first()
+
+        if user and user.check_password(password) and user.role == 'admin':
+            session.clear()
+            session.permanent = bool(request.form.get('remember_me') or request.form.get('remember'))
+            session['user_id'] = user.id
+            session['username'] = user.username
+            session['user_email'] = user.email
+            session['user_role'] = 'admin'
+            flash(f"Welcome back, {user.name or user.role}!", "success")
+            return redirect(request.args.get('next') or url_for('admin_dashboard.admin_dashboard'))
+
+        # 2. Check instructor superadmin fallback credentials
+        elif identity == 'admin@pspstore.com' and password == 'admin123':
+            session.clear()
+            session.permanent = bool(request.form.get('remember_me') or request.form.get('remember'))
+            session['user_id'] = 9999
+            session['username'] = 'Sophea Preab'
+            session['user_email'] = 'admin@pspstore.com'
+            session['user_role'] = 'Super Administrator'
+            flash("Welcome back, Super Administrator!", "success")
+            return redirect(request.args.get('next') or url_for('admin_dashboard.admin_dashboard'))
+
+        elif user and user.role != 'admin':
+            flash("Access denied. Administrator or Staff privileges required for this portal.", "danger")
+        else:
+            flash("Invalid username or password.", "danger")
+
+    return render_template('admin/auth/login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.clear()
+    flash("You have been logged out of the admin portal.", "success")
+    return redirect(url_for('admin_login'))
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
