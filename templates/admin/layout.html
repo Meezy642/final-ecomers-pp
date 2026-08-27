@@ -19,9 +19,9 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="sidebar-logo-circle">
-                <span>A</span>
+                <span>{{ 'S' if (logged_in_user_role == 'staff' or session.get('user_role') == 'staff') else 'A' }}</span>
             </div>
-            <span class="sidebar-brand-text">admin YSTAA</span>
+            <span class="sidebar-brand-text">{{ 'staff YSTAA' if (logged_in_user_role == 'staff' or session.get('user_role') == 'staff') else 'admin YSTAA' }}</span>
         </div>
 
         <nav class="sidebar-nav">
