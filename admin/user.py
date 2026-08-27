@@ -9,9 +9,25 @@ from models.user import User
 
 from . import admin_bp
 
+def admin_only_check():
+    role = session.get('user_role')
+    username = session.get('username')
+    if role == 'Super Administrator':
+        return None
+    if username:
+        user = User.query.filter_by(username=username).first()
+        if user and user.role == 'staff':
+            flash("Access denied: Staff members cannot access the User Management portal.", "danger")
+            return redirect(url_for('admin_dashboard.admin_dashboard'))
+    return None
+
 # </admin/user>
 @admin_bp.route("/user")
 def user_index():
+    denied = admin_only_check()
+    if denied:
+        return denied
+
     # noinspection SqlNoDataSourceInspection,SqlResolve
     sql = text("SELECT * FROM user")
     result = db.session.execute(sql)
@@ -22,12 +38,16 @@ def user_index():
 # </admin/user/create>
 @admin_bp.route("/user/create", methods=["GET", "POST"])
 def user_create():
+    denied = admin_only_check()
+    if denied:
+        return denied
+
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
         phone_number = request.form.get("phone_number", "").strip()
-        role = request.form.get("role", "customer")
+        role = request.form.get("role", "customer").lower()
         name = request.form.get("name", username).strip()
 
         # User.query.filter_by call ORM
@@ -80,6 +100,10 @@ def user_create():
 # </admin/user/edit/<id>>
 @admin_bp.route("/user/edit/<int:id>", methods=["GET", "POST"])
 def user_edit(id):
+    denied = admin_only_check()
+    if denied:
+        return denied
+
     user = User.query.get(id)
     if not user:
         flash("User not found.", "danger")
@@ -89,7 +113,7 @@ def user_edit(id):
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         phone_number = request.form.get("phone_number", "").strip()
-        role = request.form.get("role", "customer")
+        role = request.form.get("role", "customer").lower()
         name = request.form.get("name", "").strip()
         password = request.form.get("password", "")
 
@@ -142,6 +166,10 @@ def user_edit(id):
 # </admin/user/delete/<id>>
 @admin_bp.route("/user/delete/<int:id>", methods=["GET", "POST"])
 def user_delete(id):
+    denied = admin_only_check()
+    if denied:
+        return denied
+
     user = User.query.get(id)
     if not user:
         flash("User not found.", "danger")

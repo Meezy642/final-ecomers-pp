@@ -15,12 +15,14 @@
                     <span>Dashboard</span>
                 </a>
             </li>
+            {% if logged_in_user_role != 'staff' and session.get('user_role') != 'staff' %}
             <li class="sidebar-menu-item {% if 'user' in request.endpoint %}active{% endif %}">
                 <a href="{{ url_for('admin.user_index') }}" class="sidebar-menu-link">
                     <i class="far fa-user"></i>
                     <span>Users</span>
                 </a>
             </li>
+            {% endif %}
             <li class="sidebar-menu-item has-submenu {% if 'product' in request.endpoint or 'category' in request.endpoint %}active open{% endif %}">
                 <a href="#" class="sidebar-menu-link submenu-toggle">
                     <i class="fas fa-box-open"></i>

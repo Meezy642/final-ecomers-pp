@@ -290,14 +290,14 @@ def admin_login():
         # 1. Check database user
         user = User.query.filter((User.username == identity) | (User.email == identity)).first()
 
-        if user and user.check_password(password) and user.role == 'admin':
+        if user and user.check_password(password) and user.role in ['admin', 'staff']:
             session.clear()
             session.permanent = bool(request.form.get('remember_me') or request.form.get('remember'))
             session['user_id'] = user.id
             session['username'] = user.username
             session['user_email'] = user.email
-            session['user_role'] = 'admin'
-            flash(f"Welcome back, {user.name or user.role}!", "success")
+            session['user_role'] = user.role
+            flash(f"Welcome back, {user.name or user.role.title()}!", "success")
             return redirect(request.args.get('next') or url_for('admin_dashboard.admin_dashboard'))
 
         # 2. Check superadmin fallback credentials

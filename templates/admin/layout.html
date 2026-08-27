@@ -32,12 +32,14 @@
                         <span>dashboard</span>
                     </a>
                 </li>
-                <li class="sidebar-menu-item {% if request.endpoint in ['admin_users', 'admin_add_user', 'admin_edit_user'] %}active{% endif %}">
+                {% if logged_in_user_role != 'staff' and session.get('user_role') != 'staff' %}
+                <li class="sidebar-menu-item {% if request.endpoint in ['admin_users', 'admin_add_user', 'admin_edit_user', 'admin.user_index', 'admin.user_create', 'admin.user_edit'] %}active{% endif %}">
                     <a href="{{ url_for('admin_users') }}" class="sidebar-menu-link">
                         <i class="far fa-user"></i>
                         <span>User</span>
                     </a>
                 </li>
+                {% endif %}
                 <li class="sidebar-menu-item has-submenu {% if request.endpoint in ['admin_products', 'admin_add_product', 'admin_edit_product', 'admin_categories'] %}active open{% endif %}">
                     <a href="#" class="sidebar-menu-link submenu-toggle">
                         <i class="fas fa-tachometer-alt"></i>

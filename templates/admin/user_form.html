@@ -96,7 +96,8 @@
                     </label>
                     {% set current_role = (user.role if user else user_data.get('role', 'customer')) if edit_mode else 'customer' %}
                     <select id="role" name="role" class="form-control" style="background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 8px; padding: 10px 14px;">
-                        <option value="customer" {{ 'selected' if current_role == 'customer' else '' }}>Customer (Regular Storefront User)</option>
+                        <option value="customer" {{ 'selected' if current_role == 'customer' else '' }}>Customer (Regular User)</option>
+                        <option value="staff" {{ 'selected' if current_role == 'staff' else '' }}>Staff (Store Products & Orders Manager)</option>
                         <option value="admin" {{ 'selected' if current_role == 'admin' else '' }}>Admin (Full Management Privileges)</option>
                     </select>
                 </div>

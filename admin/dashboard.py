@@ -8,12 +8,15 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         username = session.get('username')
+        role = session.get('user_role')
         if not username:
             flash("Please log in to access the admin panel.", "error")
-            return redirect(url_for('customer.login'))
+            return redirect(url_for('admin_login'))
+        if role == 'Super Administrator':
+            return f(*args, **kwargs)
         user = User.query.filter_by(username=username).first()
-        if not user or user.role != 'admin':
-            flash("Access denied. Admin privileges required.", "error")
+        if not user or user.role not in ['admin', 'staff']:
+            flash("Access denied. Admin or Staff privileges required.", "error")
             return redirect(url_for('customer.home'))
         return f(*args, **kwargs)
     return decorated_function
