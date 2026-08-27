@@ -1,0 +1,12 @@
+<!-- Admin Footer Component -->
+<footer class="admin-footer" style="padding: 1.25rem 2rem; background: #ffffff; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 0.85rem; margin-top: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+            &copy; {{ current_year if current_year else '2026' }} <strong>YSTAA SHOPP</strong>. All rights reserved.
+        </div>
+        <div style="display: flex; gap: 15px;">
+            <a href="{{ url_for('home') }}" style="color: #7c3aed; text-decoration: none; font-weight: 500;">Storefront</a>
+            <a href="{{ url_for('admin_dashboard') }}" style="color: #64748b; text-decoration: none;">Dashboard</a>
+        </div>
+    </div>
+</footer>

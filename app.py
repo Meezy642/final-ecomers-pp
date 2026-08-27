@@ -10,6 +10,8 @@ load_dotenv()
 from models import db, User, Product, Order, Contact
 from upload_config import init_upload_config
 from customer import customer_bp
+from front import front_bp
+from auth import auth_bp
 from admin import admin_bp, dashboard_bp, product_bp, category_bp
 from items import items
 
@@ -26,6 +28,8 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 # Register Blueprints
+app.register_blueprint(front_bp)
+app.register_blueprint(auth_bp)
 app.register_blueprint(customer_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(dashboard_bp)

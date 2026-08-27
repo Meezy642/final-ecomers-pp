@@ -1,0 +1,72 @@
+<!-- Admin Sidebar Component -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="sidebar-logo-circle">
+            <span>A</span>
+        </div>
+        <span class="sidebar-brand-text">Admin Panel</span>
+    </div>
+
+    <nav class="sidebar-nav">
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item {% if request.endpoint in ['admin_dashboard', 'admin.dashboard'] %}active{% endif %}">
+                <a href="{{ url_for('admin_dashboard') }}" class="sidebar-menu-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item {% if 'user' in request.endpoint %}active{% endif %}">
+                <a href="{{ url_for('admin.user_index') }}" class="sidebar-menu-link">
+                    <i class="far fa-user"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item has-submenu {% if 'product' in request.endpoint or 'category' in request.endpoint %}active open{% endif %}">
+                <a href="#" class="sidebar-menu-link submenu-toggle">
+                    <i class="fas fa-box-open"></i>
+                    <span>Product Management</span>
+                    <i class="fas fa-chevron-right submenu-arrow"></i>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li class="{% if request.endpoint == 'admin_products' %}active{% endif %}">
+                        <a href="{{ url_for('admin_products') }}">
+                            <i class="fas fa-circle dot-icon"></i>
+                            <span>All Products</span>
+                        </a>
+                    </li>
+                    <li class="{% if request.endpoint == 'admin_add_product' %}active{% endif %}">
+                        <a href="{{ url_for('admin_add_product') }}">
+                            <i class="fas fa-circle dot-icon"></i>
+                            <span>Add Product</span>
+                        </a>
+                    </li>
+                    <li class="{% if request.endpoint == 'admin_categories' %}active{% endif %}">
+                        <a href="{{ url_for('admin_categories') }}">
+                            <i class="fas fa-circle dot-icon"></i>
+                            <span>Categories</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="sidebar-menu-item {% if 'order' in request.endpoint %}active{% endif %}">
+                <a href="{{ url_for('admin_orders') }}" class="sidebar-menu-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item {% if 'contact' in request.endpoint %}active{% endif %}">
+                <a href="{{ url_for('admin_contacts') }}" class="sidebar-menu-link">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messages</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="{{ url_for('home') }}" class="sidebar-footer-link">
+            <i class="fas fa-store"></i>
+            <span>View Store</span>
+        </a>
+    </div>
+</aside>
