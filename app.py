@@ -280,7 +280,7 @@ with app.app_context():
 # --- ADMIN PORTAL AUTHENTICATION ---
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    if session.get('username') and session.get('user_role') in ['admin', 'Super Administrator']:
+    if session.get('username') and session.get('user_role') in ['admin', 'staff', 'Super Administrator']:
         return redirect(request.args.get('next') or url_for('admin_dashboard.admin_dashboard'))
 
     if request.method == 'POST':
