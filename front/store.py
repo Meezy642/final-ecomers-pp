@@ -86,9 +86,54 @@ def cart():
 
 @front_bp.route("/checkout", methods=["GET", "POST"])
 def checkout():
+    cart_cookie = request.cookies.get("cart")
+    cart_data = json.loads(cart_cookie) if cart_cookie else {}
+    cart_items = []
+    total_price = 0.0
+
+    if cart_data:
+        for item_id_str, qty in cart_data.items():
+            try:
+                item_id = int(item_id_str)
+                prod = Product.query.get(item_id)
+                if prod:
+                    prod_dict = prod.to_dict()
+                else:
+                    prod_dict = next((p for p in items if p.get("id") == item_id), None)
+
+                if prod_dict:
+                    price = float(prod_dict.get("price", 0.0))
+                    subtotal = price * qty
+                    total_price += subtotal
+                    cart_items.append({
+                        "product": prod_dict,
+                        "quantity": qty,
+                        "item_total": round(subtotal, 2),
+                        "subtotal": round(subtotal, 2)
+                    })
+            except Exception:
+                continue
+
+    if not cart_items:
+        flash("Your cart is empty. Please add items before checkout.", "error")
+        return redirect(url_for("front.cart"))
+
+    user_email = ""
+    username = session.get("username")
+    if username:
+        user = User.query.filter_by(username=username).first()
+        user_email = user.email if user else ""
+
     if request.method == "POST":
         flash("Order placed successfully!", "success")
         resp = make_response(redirect(url_for("front.home")))
         resp.set_cookie("cart", "", expires=0)
         return resp
-    return render_template("customer/checkout.html")
+
+    return render_template(
+        "customer/checkout.html",
+        cart_items=cart_items,
+        total_price=round(total_price, 2),
+        buyer_username=username,
+        buyer_email=user_email
+    )

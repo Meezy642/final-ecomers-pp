@@ -256,7 +256,7 @@
                 <div class="border-t border-zinc-800/60 pt-4 space-y-2.5 text-xs font-medium">
                     <div class="flex justify-between text-slate-450">
                         <span>Subtotal</span>
-                        <span class="text-slate-300 font-bold">${{ "%.2f"|format(total_price) }}</span>
+                        <span class="text-slate-300 font-bold">${{ "%.2f"|format(total_price if total_price is defined else (total if total is defined else 0.0)) }}</span>
                     </div>
                     <div class="flex justify-between text-slate-450">
                         <span>Shipping Cost</span>
@@ -264,7 +264,7 @@
                     </div>
                     <div class="flex justify-between text-white font-bold border-t border-zinc-800/60 pt-3 mt-2">
                         <span class="text-sm font-heading">Total Amount</span>
-                        <span class="text-purple-400 text-base font-black font-heading">${{ "%.2f"|format(total_price) }} USD</span>
+                        <span class="text-purple-400 text-base font-black font-heading">${{ "%.2f"|format(total_price if total_price is defined else (total if total is defined else 0.0)) }} USD</span>
                     </div>
                 </div>
             </div>
