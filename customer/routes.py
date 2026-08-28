@@ -336,7 +336,8 @@ def view_product(item_id):
         in_wishlist=in_wishlist
     )
 
-@customer_bp.route('/add_to_cart/<int:item_id>', methods=['POST'])
+@customer_bp.route('/add_to_cart/<int:item_id>', methods=['GET', 'POST'])
+@customer_bp.route('/add-to-cart/<int:item_id>', methods=['GET', 'POST'])
 def add_to_cart(item_id):
     cart_cookie = request.cookies.get('cart')
     cart = json.loads(cart_cookie) if cart_cookie else {}
