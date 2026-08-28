@@ -57,32 +57,32 @@ def cart():
     cart_cookie = request.cookies.get("cart")
     cart_data = json.loads(cart_cookie) if cart_cookie else {}
     cart_items = []
-    total = 0.0
+    total_price = 0.0
 
     for item_id_str, qty in cart_data.items():
         try:
             item_id = int(item_id_str)
             prod = Product.query.get(item_id)
-            if not prod:
-                prod = next((p for p in items if p.get("id") == item_id), None)
             if prod:
-                price = float(prod.price if hasattr(prod, "price") else prod.get("price", 0))
-                title = prod.title if hasattr(prod, "title") else prod.get("title", "")
-                image = prod.image if hasattr(prod, "image") else prod.get("image", "")
+                prod_dict = prod.to_dict()
+            else:
+                prod_dict = next((p for p in items if p.get("id") == item_id), None)
+            
+            if prod_dict:
+                price = float(prod_dict.get("price", 0.0))
                 subtotal = price * qty
-                total += subtotal
+                total_price += subtotal
                 cart_items.append({
-                    "id": item_id,
-                    "title": title,
-                    "price": price,
-                    "image": image,
+                    "product": prod_dict,
                     "quantity": qty,
-                    "subtotal": subtotal
+                    "item_total": subtotal,
+                    "subtotal": subtotal,
+                    "total": subtotal
                 })
         except Exception:
             continue
 
-    return render_template("customer/cart.html", cart_items=cart_items, total=total)
+    return render_template("customer/cart.html", cart_items=cart_items, total=total_price, total_price=total_price)
 
 @front_bp.route("/checkout", methods=["GET", "POST"])
 def checkout():

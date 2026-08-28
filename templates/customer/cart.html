@@ -68,7 +68,7 @@
 
                             <!-- Total Price Cell -->
                             <td class="px-6 py-5 border-b border-zinc-800/60 align-middle font-bold text-white">
-                                ${{ "%.2f"|format(item.item_total) }}
+                                ${{ "%.2f"|format(item.item_total if item.item_total is defined else (item.total if item.total is defined else (item.subtotal if item.subtotal is defined else 0.0))) }}
                             </td>
 
                             <!-- Remove Button Cell -->
