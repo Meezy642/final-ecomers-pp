@@ -4,6 +4,7 @@ from extensions import db
 from models.product import Product
 from models.order import Order
 from models.contact import Contact
+from models.user import User
 from items import items
 from . import front_bp
 
